@@ -1,26 +1,29 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+    <title>reveal.js</title>
 
-		<link rel="stylesheet" href="css/reset.css">
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/night.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/night.css">
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/monokai.css">
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/monokai.css">
 
-		<!-- Printing and PDF exports -->
-		<script>
+    <!-- Printing and PDF exports -->
+    <script>
 			var link = document.createElement( 'link' );
 			link.rel = 'stylesheet';
 			link.type = 'text/css';
 			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
+
+
+
+    </script>
     <style>
         body {
             background: url( 'images/stars.jpg' ) no-repeat center center fixed;
@@ -29,39 +32,53 @@
             -o-background-size: cover;
             background-size: cover;
         }
+
+
+
     </style>
-	</head>
-	<body> 
-		<div class="reveal">
-			<div class="slides">
-				<section><h2>Flows - Kotlin's shot at concurrency</h2></section>
-				<section data-background-image="images/mars.png"></section>
-				<section data-background-image="images/phobos.jpg"></section>
-				<section>
-					<pre><code class="stretch" data-trim data-noescape data-line-numbers>
-class MultipleIntOperation : Operation<Int> {
-    var counter = 4;
-    override fun performAsync(callback: (Int?, Throwable?) -> Unit) {
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section><h2>Flows - Kotlin's shot at concurrency</h2></section>
+        <section data-background-image="images/mars.png">
+            <aside class="notes">
+                It’s the year 2047. Mark is the captain of Leto II - the second mission to Mars. The first expedition
+                disappeared mysteriously having launched from Phobos - one of Mars satellites - to land on the Red
+                Planet. Mark has lead his team from the moon with no complications and that’s what worries him most. He
+                hoped he would encounter some problems that could lead him to what happened to Leto I.
+            </aside>
+        </section>
+        <section data-background-image="images/phobos.jpg">
+            <aside class="notes">
+                Now that he has traced their path all the way to Phobos and it’s time to leave the Red Rock he feels
+                really uneasy. He should know what issues Leto I was facing, but he has seen no sign of them so far.
+                He’s now ordering to launch the engines and hopes there won’t be any unforeseen complications… Leto II
+                is travelling aboard a large carrier equipped with large engines. They take quite a while to launch and
+                they also have an autocleaning function that preserves all the elements of the propulsion system. Both
+                starting the engines and doing the auto cleaning takes quite a while and so it’s started asynchronously
+                by the spacecraft driver. This is the same code that Leto I used:
+            </aside>
+        </section>
+        <section>
+            <pre><code class="kotlin" data-trim data-noescape data-line-numbers>
+          val engineFuture = spaceship.startEngines()
+          val cleaningFuture = spaceship.startAutoCleaning()
 
-        while( counter > 0) {
-            callback(1, null)
-            counter--
-        }
-  <mark>      callback(null, null)</mark>
-    }
+          engineFuture.whenComplete { _, failure ->
+              if (failure == null) spaceship.setOff()
+          }
+			</code></pre>
+            <aside class="notes">
+                However there is a subtle problem here
+            </aside>
+        </section>
+    </div>
+</div>
 
-    override fun cancel() {
-        println("cancelled")
-    }
+<script src="js/reveal.js"></script>
 
-					</code></pre>
-				</section>
-			</div>
-		</div>
-
-		<script src="js/reveal.js"></script>
-
-		<script>
+<script>
 			// More info about config & dependencies:
 			// - https://github.com/hakimel/reveal.js#configuration
 			// - https://github.com/hakimel/reveal.js#dependencies
@@ -73,6 +90,9 @@ class MultipleIntOperation : Operation<Int> {
 					{ src: 'plugin/highlight/highlight.js', async: true }
 				]
 			});
-		</script>
-	</body>
+
+
+
+</script>
+</body>
 </html>
