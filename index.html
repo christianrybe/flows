@@ -21,14 +21,22 @@
 			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
 		</script>
+    <style>
+        body {
+            background: url( 'images/stars.jpg' ) no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+    </style>
 	</head>
-	<body>
+	<body> 
 		<div class="reveal">
 			<div class="slides">
-				<section>Flows - Kotlin's shot at concurrency</section>
-				<section>
-					<img class="stretch" src="images/astronaut.jpg">
-				</section>
+				<section><h2>Flows - Kotlin's shot at concurrency</h2></section>
+				<section data-background-image="images/mars.png"></section>
+				<section data-background-image="images/phobos.jpg"></section>
 				<section>
 					<pre><code class="stretch" data-trim data-noescape data-line-numbers>
 class MultipleIntOperation : Operation<Int> {
