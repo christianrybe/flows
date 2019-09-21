@@ -62,15 +62,46 @@
         </section>
         <section>
             <pre><code class="kotlin" data-trim data-noescape data-line-numbers>
-          val engineFuture = spaceship.startEngines()
-          val cleaningFuture = spaceship.startAutoCleaning()
+                fun initiateStart() {
+                    val engineFuture = spaceship.startEngines()
+                    val cleaningFuture = spaceship.startAutoCleaning()
 
-          engineFuture.whenComplete { _, failure ->
-              if (failure == null) spaceship.setOff()
-          }
+                    engineFuture.whenComplete { _, failure ->
+                        if (failure == null) spaceship.setOff()
+                    }
+                }
 			</code></pre>
             <aside class="notes">
-                However there is a subtle problem here
+                This looks more or less fine, right? I don't really care about the result of cleaning, it takes a while
+                so I just want to kick it off in another thread and if it's all fine with the engines, then we're gonna
+                set off.
+            </aside>
+        </section>
+        <section>
+            <pre><code class="kotlin" data-trim data-noescape>
+                fun initiateStart() {
+                    val engineFuture = spaceship.startEngines()
+                    val cleaningFuture = spaceship.startAutoCleaning()
+
+                    engineFuture.whenComplete { speed, failure ->
+                        if (failure == null) spaceship.setOff(speed)
+                    }
+                    cleaningFuture.whenComplete { result, failure ->
+                        if (failure == null) reportCleaning(result)
+                    }
+                }
+            </code></pre>
+            <aside class="notes">
+                The problem becomes a bit more apparent, when we add a few more lines. Let's actually do something with
+                the result of cleaning. We can pretty clearly see now that these two futures are completely unrelated.
+                Futures are known as hot sources. They are like resources, IO for example - they need to be closed
+                whether on completion or when
+                an error occurs. Here, when these futures are unrelated two bad things may happen.
+                Firstly: if cleaningFuture fails, then we have lost
+                reference to engineFuture and it continues to work in the background consuming resources. Second of all
+                if it so happens that engineFuture also fails, then we cannot handle the failure in any way. If cleaning
+                fails and the engines catch fire, we won't be able to do anything about it and the spaceship will set off
+                anyway.
             </aside>
         </section>
     </div>
