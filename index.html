@@ -25,6 +25,9 @@
 
 
 
+
+
+
     </script>
     <style>
         body {
@@ -34,6 +37,9 @@
             -o-background-size: cover;
             background-size: cover;
         }
+
+
+
 
 
 
@@ -66,22 +72,39 @@
         </section>
         <section>
             <section>
+                <pre><code class="kotlin" data-trim>
+                    fun startEngines(): CompletableFuture&lt;Int&gt; {
+                        return CompletableFuture.supplyAsync {
+                            println("Starting engines from Completable Future")
+                            Thread.sleep(700) //heavy work
+                            120
+                        }
+                    }</code></pre>
+                <aside class="notes">
+                    We have here two async functions using Completable Future to spin off async tasks.
+                </aside>
+            </section>
+            <section>
+                <pre><code class="kotlin" data-trim>
+                    fun startAutoCleaning(): CompletableFuture&lt;Boolean&gt; {
+                        return CompletableFuture.supplyAsync {
+                            println("Starting cleaning from Completable Future")
+                            Thread.sleep(500) //takes a while too
+                            throw RuntimeException()
+                        }
+                    }</code></pre>
+            </section>
+            <section>
             <pre><code class="kotlin" data-trim data-noescape data-line-numbers>
                 fun initiateStart() {
                     val engineFuture = spaceship.startEngines()
                     val cleaningFuture = spaceship.startAutoCleaning()
 
-                    engineFuture.whenComplete { speed, failure ->
-                        if (failure == null) spaceship.setOff(speed)
-                    }
+                    spaceship.setOff(engineFuture.get())
                 }
 			</code></pre>
                 <aside class="notes">
-                    This looks more or less fine, right? I don't really care about the result of cleaning, it takes a
-                    while
-                    so I just want to kick it off in another thread and if it's all fine with the engines, then we're
-                    gonna
-                    set off with the initial speed returned when the engines are started.
+
                 </aside>
             </section>
             <section>
@@ -91,32 +114,47 @@
                     val engineFuture = spaceship.startEngines()
                     val cleaningFuture = spaceship.startAutoCleaning()
 
-                    engineFuture.whenComplete { speed, failure ->
-                        if (failure == null) spaceship.setOff(speed)
-                    }
-                    cleaningFuture.whenComplete { result, failure ->
-                        if (failure == null) reportCleaning(result)
-                    }
+                    spaceship.setOff(engineFuture.get())
+                    reportCleaning(cleaningFuture.get())
                 }
                 </code>
             </pre>
                 <aside class="notes">
-                    The problem becomes a bit more apparent, when we add a few more lines. Let's actually do something
-                    with
-                    the result of cleaning. We can pretty clearly see now that these two futures are completely
-                    unrelated.
-                    Futures are known as hot sources. They are like resources, IO for example - they need to be closed
+                    And then we have the driver code that uses them.
+                    This looks more or less fine, right? Cleaning takes a while
+                    so I want to kick it off in another thread and I want to happen while the engines are starting to
+                    save some time. When the engines are on, the we're gonna
+                    set off with the speed reported by the engines.
+                    The problem is that futures are known as hot sources. They are like resources, IO for example - they
+                    need to be closed
                     whether on completion or when
                     an error occurs. Here, when these futures are unrelated two bad things may happen.
                     Firstly: if cleaningFuture fails, then we have lost
                     reference to engineFuture and it continues to work in the background consuming resources. Second of
-                    all
-                    if it so happens that engineFuture also fails, then we cannot handle the failure in any way. If
-                    cleaning
-                    fails and the engines catch fire, we won't be able to do anything about it and the spaceship will
-                    set
-                    off
-                    anyway.
+                    all if it so happens that engineFuture also fails, then we cannot handle the failure in any way.
+                </aside>
+            </section>
+            <section>
+                <pre><code class="hljs" data-trim data-noescape>
+                Starting engines from Completable Future
+                Futures started!
+                Starting cleaning from Completable Future
+                <span class="fragment fade-in">
+                Spaceship is taking off with speed: 120
+                java.util.concurrent.ExecutionException: java.lang.RuntimeException
+                at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:395)
+                at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1999)
+                </span>
+                <span class="fragment fade-in">
+                //Cleaning system failure sets the engines on fire
+                //when the spaceship has already set off!
+                </span>
+                </code></pre>
+                <aside class="notes">
+                    It seems that we have solved the mystery of Leto I.
+                    Careless handling of asynchronous tasks led
+                    to a true disaster. Failure in the cle How can Mark solve this issue and not get his spaceship blown
+                    up?
                 </aside>
             </section>
             <section>
@@ -138,10 +176,22 @@
             </pre>
                 <aside class="notes">
                     One possible solution to this problem is using <b>combinators</b>. They basically allow you to
-                    combine multiple
-                    futures into
+                    combine multiple futures and handles failures properly. And that is more or less fine actually.
+                    But... there always is a but :) This looks horrible for me. Second of all you really need
+                    to go deep into this combinators business. And I really don't want that. I just wanted
+                    to spin off some async tasks and not mess around with combinators. Now your async code looks
+                    very different to your async code, which is not nice at all. You are also lucky if there is a
+                    combinator for the problem you are facing and you can find it.
                 </aside>
             </section>
+        </section>
+        <section>
+            <h3>Kotlin Coroutines</h3>
+            <h3>to the rescue!</h3>
+            <aside class="notes">
+                How is this going to help Mark not get blown up or how is this going to help you write code
+                you are familiar with?
+            </aside>
         </section>
         <!--        <section>-->
         <!--            <pre>-->
@@ -171,8 +221,6 @@
 					{ src: 'plugin/highlight/highlight.js', async: true }
 				]
 			});
-
-
 
 
 
