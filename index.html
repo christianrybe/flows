@@ -28,6 +28,7 @@
 
 
 
+
     </script>
     <style>
         body {
@@ -37,6 +38,7 @@
             -o-background-size: cover;
             background-size: cover;
         }
+
 
 
 
@@ -95,19 +97,6 @@
                     }</code></pre>
             </section>
             <section>
-            <pre><code class="kotlin" data-trim data-noescape data-line-numbers>
-                fun initiateStart() {
-                    val engineFuture = spaceship.startEngines()
-                    val cleaningFuture = spaceship.startAutoCleaning()
-
-                    spaceship.setOff(engineFuture.get())
-                }
-			</code></pre>
-                <aside class="notes">
-
-                </aside>
-            </section>
-            <section>
             <pre>
                 <code class="kotlin" data-trim data-noescape>
                 fun initiateStart() {
@@ -135,7 +124,7 @@
                 </aside>
             </section>
             <section>
-                <pre><code class="hljs" data-trim data-noescape>
+                <pre><code class="plaintext" data-trim data-noescape>
                 Starting engines from Completable Future
                 Futures started!
                 Starting cleaning from Completable Future
@@ -144,40 +133,85 @@
                 java.util.concurrent.ExecutionException: java.lang.RuntimeException
                 at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:395)
                 at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1999)
-                </span>
-                <span class="fragment fade-in">
                 //Cleaning system failure sets the engines on fire
                 //when the spaceship has already set off!
                 </span>
                 </code></pre>
                 <aside class="notes">
-                    It seems that we have solved the mystery of Leto I.
+                    Let's see what happens when we run this code.
+                    We see that code is indeed executed async, because the logs are not printed sequentially.
+                    And then what happens when the futures are actually executed?
+                    Engines complete successfully, but cleaning fails and this failure is not handled properly.
+                    We see fire in the cleaning system, but can't do anything about it and the spaceship sets of
+                    anyway. It seems that we have solved the mystery of Leto I.
                     Careless handling of asynchronous tasks led
-                    to a true disaster. Failure in the cle How can Mark solve this issue and not get his spaceship blown
-                    up?
+                    to a true disaster. Can Mark solve this issue and not get his spaceship blown up?
                 </aside>
             </section>
             <section>
             <pre>
                 <code class="kotlin" data-trim data-noescape>
                     fun initiateStart() {
-                       spaceship
-                        .startEngines()
-                        .thenCombine(spaceship.startAutoCleaning()) {
-                            speed, two ->
-                                spaceship.setOff(speed)
-                                two
-                        }
-                        .whenComplete { result, failure ->
-                            if (failure == null) reportCleaning(result)
-                        }
+                        reportCleaning(
+                            spaceship
+                                .startEngines()
+                                .thenCombine(spaceship.startAutoCleaning())
+                                { speed, isCleaningOk ->
+                                    spaceship.setOff(speed)
+                                    isCleaningOk
+                                }
+                                .get()
+                        )
                     }
                 </code>
             </pre>
                 <aside class="notes">
                     One possible solution to this problem is using <b>combinators</b>. They basically allow you to
-                    combine multiple futures and handles failures properly. And that is more or less fine actually.
-                    But... there always is a but :) This looks horrible for me. Second of all you really need
+                    combine multiple futures and handles failures properly.
+                </aside>
+            </section>
+            <section>
+                <pre><code class="plaintext" data-trim data-noescape>
+                Starting engines from Completable Future
+                Starting cleaning from Completable Future
+                java.util.concurrent.ExecutionException: java.lang.RuntimeException
+                at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:395)
+                at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1999)
+                </code></pre>
+                <aside class="notes">
+                    And that is more or less fine actually.
+                    But... there always is a but :) This looks horrible for me. I mean look at this code!
+                    Can you read it for the first time and see what it's doing? I don't even though I wrote it!
+                    It's like ''a joke here''
+                    Second of all you really need
+                    to go deep into this combinators business. And I really don't want that. I just wanted
+                    to spin off some async tasks and not mess around with combinators. Now your async code looks
+                    very different to your async code, which is not nice at all. You are also lucky if there is a
+                    combinator for the problem you are facing and you can find it.
+                </aside>
+            </section>
+            <section>
+            <pre>
+                <code class="kotlin" data-trim data-noescape>
+                    fun initiateStart() {
+                        reportCleaning(
+                            spaceship
+                                .startEngines()
+                                .thenCombine(spaceship.startAutoCleaning())
+                                { speed, isCleaningOk ->
+                                    spaceship.setOff(speed)
+                                    isCleaningOk
+                                }
+                                .get()
+                        )
+                    }
+                </code>
+            </pre>
+                <aside class="notes">
+                    But... there always is a but :) This looks horrible for me. I mean look at this code!
+                    Can you read it for the first time and see what it's doing? I don't even though I wrote it!
+                    It's like ''a joke here''
+                    Second of all you really need
                     to go deep into this combinators business. And I really don't want that. I just wanted
                     to spin off some async tasks and not mess around with combinators. Now your async code looks
                     very different to your async code, which is not nice at all. You are also lucky if there is a
@@ -221,6 +255,7 @@
 					{ src: 'plugin/highlight/highlight.js', async: true }
 				]
 			});
+
 
 
 
