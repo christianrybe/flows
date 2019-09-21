@@ -23,6 +23,8 @@
 
 
 
+
+
     </script>
     <style>
         body {
@@ -32,6 +34,8 @@
             -o-background-size: cover;
             background-size: cover;
         }
+
+
 
 
 
@@ -61,24 +65,28 @@
             </aside>
         </section>
         <section>
+            <section>
             <pre><code class="kotlin" data-trim data-noescape data-line-numbers>
                 fun initiateStart() {
                     val engineFuture = spaceship.startEngines()
                     val cleaningFuture = spaceship.startAutoCleaning()
 
-                    engineFuture.whenComplete { _, failure ->
-                        if (failure == null) spaceship.setOff()
+                    engineFuture.whenComplete { speed, failure ->
+                        if (failure == null) spaceship.setOff(speed)
                     }
                 }
 			</code></pre>
-            <aside class="notes">
-                This looks more or less fine, right? I don't really care about the result of cleaning, it takes a while
-                so I just want to kick it off in another thread and if it's all fine with the engines, then we're gonna
-                set off.
-            </aside>
-        </section>
-        <section>
-            <pre><code class="kotlin" data-trim data-noescape>
+                <aside class="notes">
+                    This looks more or less fine, right? I don't really care about the result of cleaning, it takes a
+                    while
+                    so I just want to kick it off in another thread and if it's all fine with the engines, then we're
+                    gonna
+                    set off with the initial speed returned when the engines are started.
+                </aside>
+            </section>
+            <section>
+            <pre>
+                <code class="kotlin" data-trim data-noescape>
                 fun initiateStart() {
                     val engineFuture = spaceship.startEngines()
                     val cleaningFuture = spaceship.startAutoCleaning()
@@ -90,20 +98,61 @@
                         if (failure == null) reportCleaning(result)
                     }
                 }
-            </code></pre>
-            <aside class="notes">
-                The problem becomes a bit more apparent, when we add a few more lines. Let's actually do something with
-                the result of cleaning. We can pretty clearly see now that these two futures are completely unrelated.
-                Futures are known as hot sources. They are like resources, IO for example - they need to be closed
-                whether on completion or when
-                an error occurs. Here, when these futures are unrelated two bad things may happen.
-                Firstly: if cleaningFuture fails, then we have lost
-                reference to engineFuture and it continues to work in the background consuming resources. Second of all
-                if it so happens that engineFuture also fails, then we cannot handle the failure in any way. If cleaning
-                fails and the engines catch fire, we won't be able to do anything about it and the spaceship will set off
-                anyway.
-            </aside>
+                </code>
+            </pre>
+                <aside class="notes">
+                    The problem becomes a bit more apparent, when we add a few more lines. Let's actually do something
+                    with
+                    the result of cleaning. We can pretty clearly see now that these two futures are completely
+                    unrelated.
+                    Futures are known as hot sources. They are like resources, IO for example - they need to be closed
+                    whether on completion or when
+                    an error occurs. Here, when these futures are unrelated two bad things may happen.
+                    Firstly: if cleaningFuture fails, then we have lost
+                    reference to engineFuture and it continues to work in the background consuming resources. Second of
+                    all
+                    if it so happens that engineFuture also fails, then we cannot handle the failure in any way. If
+                    cleaning
+                    fails and the engines catch fire, we won't be able to do anything about it and the spaceship will
+                    set
+                    off
+                    anyway.
+                </aside>
+            </section>
+            <section>
+            <pre>
+                <code class="kotlin" data-trim data-noescape>
+                    fun initiateStart() {
+                       spaceship
+                        .startEngines()
+                        .thenCombine(spaceship.startAutoCleaning()) {
+                            speed, two ->
+                                spaceship.setOff(speed)
+                                two
+                        }
+                        .whenComplete { result, failure ->
+                            if (failure == null) reportCleaning(result)
+                        }
+                    }
+                </code>
+            </pre>
+                <aside class="notes">
+                    One possible solution to this problem is using <b>combinators</b>. They basically allow you to
+                    combine multiple
+                    futures into
+                </aside>
+            </section>
         </section>
+        <!--        <section>-->
+        <!--            <pre>-->
+        <!--                <code class="kotlin" dat-trim data-noescape>-->
+        <!--                    -->
+        <!--                </code>-->
+        <!--            </pre>-->
+        <!--        <aside class="notes">-->
+
+        <!--        </aside>-->
+        <!--        </section>-->
     </div>
 </div>
 
@@ -114,6 +163,7 @@
 			// - https://github.com/hakimel/reveal.js#configuration
 			// - https://github.com/hakimel/reveal.js#dependencies
 			Reveal.initialize({
+			    progress: false,
 				dependencies: [
 					{ src: 'plugin/markdown/marked.js' },
 					{ src: 'plugin/markdown/markdown.js' },
@@ -121,6 +171,8 @@
 					{ src: 'plugin/highlight/highlight.js', async: true }
 				]
 			});
+
+
 
 
 
