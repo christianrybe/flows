@@ -23,12 +23,6 @@
 
 
 
-
-
-
-
-
-
     </script>
     <style>
         body {
@@ -38,12 +32,6 @@
             -o-background-size: cover;
             background-size: cover;
         }
-
-
-
-
-
-
 
 
 
@@ -179,15 +167,8 @@
                 at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1999)
                 </code></pre>
                 <aside class="notes">
-                    And that is more or less fine actually.
-                    But... there always is a but :) This looks horrible for me. I mean look at this code!
-                    Can you read it for the first time and see what it's doing? I don't even though I wrote it!
-                    It's like ''a joke here''
-                    Second of all you really need
-                    to go deep into this combinators business. And I really don't want that. I just wanted
-                    to spin off some async tasks and not mess around with combinators. Now your async code looks
-                    very different to your async code, which is not nice at all. You are also lucky if there is a
-                    combinator for the problem you are facing and you can find it.
+                    And that is more or less fine actually. When any of the future completes exceptionally then
+                    the entire combinator is cancelled.
                 </aside>
             </section>
             <section>
@@ -220,16 +201,75 @@
             </section>
         </section>
         <section>
-            <h3>Kotlin Coroutines</h3>
-            <h3>to the rescue!</h3>
-            <aside class="notes">
-                How is this going to help Mark not get blown up or how is this going to help you write code
-                you are familiar with?
-            </aside>
+            <section>
+                <h3>Kotlin Coroutines</h3>
+                <h3>to the rescue!</h3>
+                <aside class="notes">
+                    How is this going to help Mark not get blown up or how is this going to help you write code
+                    you are familiar with?
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        suspend fun startEngines(): Int {
+                            println("Starting engines")
+                            delay(700)
+                            return 190
+                        }
+                    </code>
+                </pre>
+                <aside class="notes">
+                    We will first simplify the the spaceship functions. Instead of using Completable
+                    Futures they will be declared as suspending functions and will simply return their values.
+                    A suspending function is simply a function which execution can be paused and resumed later
+                    without blocking the calling thread. How this is done is these suspend functions are compiled
+                    to functions with a callback parameter which is used to resume the execution of the function.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        suspend fun autoClean(): Boolean {
+                            println("Starting cleaning")
+                            delay(500)
+                            throw RuntimeException()
+                        }
+                    </code>
+                </pre>
+                <aside class="notes">
+                    And we also change the second function to a suspending function.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                    suspend fun initiateStart() = coroutineScope {
+                        val engineDeferred = async { suspendingShip.startEngines() }
+                        val cleaningDeferred = async { suspendingShip.autoClean() }
+
+                        println("Coroutines started!")
+
+                        spaceship.setOff(engineDeferred.await())
+                        reportCleaning(cleaningDeferred.await())
+                    }
+                    </code>
+                </pre>
+                <aside class="notes">
+                    With Kotlin coroutines we can write the code like it was ordinary sequential code. We can almost go
+                    back to our first attempt and this time it is going to be correct. It's sup
+
+                    We keep the same logic, but wrap it in a coroutineScope. What this does is it creates
+                    a ContextScope and executes the provided block of code in a new coroutine. You can basically think
+                    of coroutines as lightweight threads. So lightweight in fact that you are encouraged to create
+                    a lot of them in your concurrent applications.
+                    A slight difference to the code that we had before is that we are not wrapping
+                </aside>
+            </section>
         </section>
         <!--        <section>-->
         <!--            <pre>-->
-        <!--                <code class="kotlin" dat-trim data-noescape>-->
+        <!--                <code class="kotlin" data-trim data-noescape>-->
         <!--                    -->
         <!--                </code>-->
         <!--            </pre>-->
@@ -255,6 +295,9 @@
 					{ src: 'plugin/highlight/highlight.js', async: true }
 				]
 			});
+
+
+
 
 
 
