@@ -23,6 +23,7 @@
 
 
 
+
     </script>
     <style>
         body {
@@ -32,6 +33,7 @@
             -o-background-size: cover;
             background-size: cover;
         }
+
 
 
 
@@ -90,6 +92,8 @@
                 fun initiateStart() {
                     val engineFuture = spaceship.startEngines()
                     val cleaningFuture = spaceship.startAutoCleaning()
+
+                    println("Futures started!")
 
                     spaceship.setOff(engineFuture.get())
                     reportCleaning(cleaningFuture.get())
@@ -255,12 +259,20 @@
                     }
                     </code>
                 </pre>
+                <p class="fragment" data-code-focus="1"/>
+                <p class="fragment" data-code-focus="2,3"/>
                 <aside class="notes">
                     With Kotlin coroutines we can write the code like it was ordinary sequential code. We can almost go
-                    back to our first attempt and this time it is going to be correct. It's sup
-
-                    We keep the same logic, but wrap it in a coroutineScope. What this does is it creates
-                    a ContextScope and executes the provided block of code in a new coroutine. You can basically think
+                    back to our first attempt and this time it is going to be correct. It's very easy to write and
+                    super readable. We keep almost the same logic, but wrap it in a coroutineScope and async modifiers.
+                </aside>
+            </section>
+            <section>
+                <aside class="notes">
+                    Concurrency in Kotlin just like the entire language is very explicit. The way it works here is that
+                    we create a CoroutineScope at the very top
+                    What this does is it creates a CoroutineScope and executes the provided block of code in a
+                    new coroutine. You can basically think
                     of coroutines as lightweight threads. So lightweight in fact that you are encouraged to create
                     a lot of them in your concurrent applications.
                     A slight difference to the code that we had before is that we are not wrapping
@@ -288,13 +300,21 @@
 			// - https://github.com/hakimel/reveal.js#dependencies
 			Reveal.initialize({
 			    progress: false,
+			    slideNumber: true,
 				dependencies: [
 					{ src: 'plugin/markdown/marked.js' },
 					{ src: 'plugin/markdown/markdown.js' },
 					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true }
+					{ src: 'plugin/highlight/highlight.js', async: true },
+					{ src: 'node_modules/reveal-code-focus/reveal-code-focus.js',
+                      async: true,
+                      callback: function() {
+                        RevealCodeFocus();
+                      }
+                    }
 				]
 			});
+
 
 
 
