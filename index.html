@@ -25,6 +25,11 @@
 
 
 
+
+
+
+
+
     </script>
     <style>body {
             background: url( 'images/stars.jpg' ) no-repeat center center fixed;
@@ -33,6 +38,11 @@
             -o-background-size: cover;
             background-size: cover;
         }
+
+
+
+
+
 
 
 
@@ -120,14 +130,14 @@
                 Starting engines from Completable Future
                 Futures started!
                 Starting cleaning from Completable Future
-                <span class="fragment fade-in">
+                <p class="fragment fade-in">
                 Spaceship is taking off with speed: 120
                 java.util.concurrent.ExecutionException: java.lang.RuntimeException
                 at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:395)
                 at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1999)
                 //Cleaning system failure sets the engines on fire
                 //when the spaceship has already set off!
-                </span>
+                </p>
                 </code></pre>
                 <aside class="notes">
                     Let's see what happens when we run this code.
@@ -318,8 +328,9 @@
                     Async is an extension method on CoroutineScope. Don't worry if you don't know what that is. It
                     basically operates on the coroutine scope we created here. async{} creates a new coroutine and
                     it returns its future result as an implementation of Deferred, which is kind of Kotlin equivalent of
-                    Java Future. This is one of Kotlin coroutine builders and what they also do is they create their
-                    own CoroutineScope, which allows them to launch their children computation.
+                    Java Future, but better. It's scoped like we can see here and CoroutineScope handles cancellation,
+                    so Deferred is fail-safe. This is one of Kotlin coroutine builders and what they also do is they
+                    create their own CoroutineScope, which allows them to launch their children computation.
                 </aside>
             </section>
             <section>
@@ -338,12 +349,44 @@
                 </aside>
             </section>
         </section>
-        <section data-background-image="images/orion.jpg">
-            <aside class="notes">
-                We have helped Mark find the possible cause of Leto's I trouble and fix it. Moreover we gave him
-                a standard, very nice, readable and fullproof solution for parallel decomposition of tasks. He's now
-                safely off from Phobos
-            </aside>
+        <section>
+            <section data-background-image="images/orion.jpg">
+                <aside class="notes">
+                    We have helped Mark find the possible cause of Leto's I trouble and fix it. Moreover we gave him
+                    a standard, very nice, readable and foolproof solution for parallel decomposition of tasks. He's now
+                    safely off from Phobos continuing his mission.
+                </aside>
+            </section>
+            <section>
+                 <pre>
+                    <code class="kotlin stretch" data-trim data-noescape>
+                        fun main() = runBlocking {
+                            launch {
+                                for (i in 1..5) {
+                                    println("Actively correcting path...")
+                                    delay(500)
+                                }
+                            }
+                            println("Waiting for the coroutine to launch...")
+                            delay(500)
+
+                        <p class="fragment fade-in">
+                            println("Starting blocking measurements...")
+                            val readings = SensorController.getAllReadings()
+                            println(readings)
+                                        </p>
+                        <p class="fragment fade-in">
+                            println("Starting non-blocking measurements...")
+                            val flow = SensorController.getReadingsInFlow()
+                            flow.collect { println(it) }
+                                        </p>
+                        }
+                    </code>
+                 </pre>
+            </section>
+            <section>
+                <video src="images/flows.mov" controls></video>
+            </section>
         </section>
         <!--        <section>-->
         <!--            <pre>-->
@@ -380,6 +423,11 @@
                     }
 				]
 			});
+
+
+
+
+
 
 
 
