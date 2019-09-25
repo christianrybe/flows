@@ -20,25 +20,15 @@
 			link.type = 'text/css';
 			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
+
     </script>
-    <style>
-        body {
+    <style>body {
             background: url( 'images/stars.jpg' ) no-repeat center center fixed;
             -webkit-background-size: cover;
             -moz-background-size: cover;
             -o-background-size: cover;
             background-size: cover;
         }
-
-
-
-
-
-
-
-
-
-
     </style>
 </head>
 <body>
@@ -218,29 +208,50 @@
             <section>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
-                        suspend fun startEngines(): Int {
-                            println("Starting engines")
-                            delay(700)
-                            return 190
-                        }
+                        suspend fun startEngines(): Int =
+                            withContext(Dispatchers.IO) {
+                                println("Starting engines")
+                                delay(700)
+                                190
+                            }
                     </code>
                 </pre>
+                <p class="fragment" data-code-focus="2"/>
                 <aside class="notes">
-                    We will first simplify the the spaceship functions. Instead of using Completable
+                    We will first modify the the spaceship functions. Instead of using Completable
                     Futures they will be declared as suspending functions and will simply return their values.
+                    However we don't want to only declare them as suspending, but we actually want to make them
+                    suspending. What does that even mean?
                     A suspending function is simply a function which execution can be paused and resumed later
-                    without blocking the calling thread. How this is done is these suspend functions are compiled
+                    without blocking the calling thread. How is this done? These suspend functions are compiled
                     to functions with a callback parameter which is used to resume the execution of the function.
                 </aside>
             </section>
             <section>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
-                        suspend fun autoClean(): Boolean {
-                            println("Starting cleaning")
-                            delay(500)
-                            throw RuntimeException()
-                        }
+                        suspend fun startEngines(callback: Continuation&lt;Int&gt;): Int =
+                            withContext(Dispatchers.IO) {
+                                println("Starting engines")
+                                delay(700)
+                                190
+                            }
+                    </code>
+                </pre>
+                <p class="fragment" data-code-focus="1">
+                    <i>callback</i> is used to resume computation.
+                </p>
+                <aside class="notes"></aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        suspend fun autoClean(): Boolean =
+                           withContext(Dispatchers.IO) {
+                               println("Starting cleaning")
+                               delay(500)
+                               throw RuntimeException()
+                           }
                     </code>
                 </pre>
                 <aside class="notes">
@@ -286,6 +297,13 @@
                     coroutines as lightweight threads. So lightweight in fact that you should not be afraid creating
                     them, but you're actually encouraged to create many of them to structure your concurrent logic.
                     Which I guess is kind of exemplified by how easy it is to create and use them.
+
+                    Async is an extension method on CoroutineScope. Don't worry if you don't know what that is. It
+                    basically operates on the coroutine scope we created here. async{} creates a new coroutine and
+                    it returns its future result as an implementation of Deferred, which is kind of Kotlin equivalent of
+                    Java Future. This is one of Kotlin coroutine builders and what they also do is they create their
+                    own CoroutineScope, which allows them to launch their children computation. Let's not go too deep
+                    into the rabbit hole, but I hope you get the idea.
                 </aside>
             </section>
             <section>
@@ -335,6 +353,7 @@
                     }
 				]
 			});
+
 </script>
 </body>
 </html>
