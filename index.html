@@ -21,6 +21,10 @@
 			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
 
+
+
+
+
     </script>
     <style>body {
             background: url( 'images/stars.jpg' ) no-repeat center center fixed;
@@ -29,6 +33,10 @@
             -o-background-size: cover;
             background-size: cover;
         }
+
+
+
+
     </style>
 </head>
 <body>
@@ -216,7 +224,6 @@
                             }
                     </code>
                 </pre>
-                <p class="fragment" data-code-focus="2"/>
                 <aside class="notes">
                     We will first modify the the spaceship functions. Instead of using Completable
                     Futures they will be declared as suspending functions and will simply return their values.
@@ -230,7 +237,7 @@
             <section>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
-                        suspend fun startEngines(callback: Continuation&lt;Int&gt;): Int =
+                        fun startEngines(callback: Continuation&lt;Int&gt;): Int =
                             withContext(Dispatchers.IO) {
                                 println("Starting engines")
                                 delay(700)
@@ -254,8 +261,18 @@
                            }
                     </code>
                 </pre>
+                <p class="fragment" data-code-focus="2"/>
                 <aside class="notes">
-                    And we also change the second function to a suspending function.
+                    We also need to change the second function to a suspending function. But you're probably asking
+                    yourself what is this withContext() function? This is the function that actually does the suspending
+                    magic. It calls the given block, suspends until it completes and returns the result. It also takes
+                    a coroutine context parameter, which here is a Dispatcher. Dispatchers describe how the computation
+                    should be run. Because we know that our function is not CPU intensive and we just want to wait for
+                    it, then we use the IO Dispatcher to offload the task to the shared pool of threads. This is what
+                    we would use IO Dispatcher for, right? We have a blocking task, like reading from a file and
+                    someone just needs to wait for the end. It's not a heavy computation, so we can possibly have many
+                    of these and that's what the IO Dispatcher is. By default it has 64 threads unless you have more
+                    cores than this.
                 </aside>
             </section>
             <section>
@@ -302,20 +319,31 @@
                     basically operates on the coroutine scope we created here. async{} creates a new coroutine and
                     it returns its future result as an implementation of Deferred, which is kind of Kotlin equivalent of
                     Java Future. This is one of Kotlin coroutine builders and what they also do is they create their
-                    own CoroutineScope, which allows them to launch their children computation. Let's not go too deep
-                    into the rabbit hole, but I hope you get the idea.
+                    own CoroutineScope, which allows them to launch their children computation.
                 </aside>
             </section>
             <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        withContext {}
+                        coroutineScope {}
+                        async {}
+                    </code>
+                    <h3 class="fragment fade-in">They all create their own CoroutineScope</h3>
+                </pre>
                 <aside class="notes">
-
-                    What this does is it creates a CoroutineScope and executes the provided block of code in a
-                    new coroutine. You can basically think
-                    of coroutines as lightweight threads. So lightweight in fact that you are encouraged to create
-                    a lot of them in your concurrent applications.
-                    A slight difference to the code that we had before is that we are not wrapping
+                    All coroutine builders and scoping functions (these special coroutine functions that we've seen)
+                    create their own CoroutineScope. Let's not go too deep into the rabbit hole, but I hope you get the
+                    idea.
                 </aside>
             </section>
+        </section>
+        <section data-background-image="images/orion.jpg">
+            <aside class="notes">
+                We have helped Mark find the possible cause of Leto's I trouble and fix it. Moreover we gave him
+                a standard, very nice, readable and fullproof solution for parallel decomposition of tasks. He's now
+                safely off from Phobos
+            </aside>
         </section>
         <!--        <section>-->
         <!--            <pre>-->
@@ -339,7 +367,6 @@
 			Reveal.initialize({
 			    progress: false,
 			    history: true,
-			    slideNumber: true,
 				dependencies: [
 					{ src: 'plugin/markdown/marked.js' },
 					{ src: 'plugin/markdown/markdown.js' },
@@ -353,6 +380,10 @@
                     }
 				]
 			});
+
+
+
+
 
 </script>
 </body>
