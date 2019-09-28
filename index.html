@@ -21,15 +21,6 @@
 			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
 
-
-
-
-
-
-
-
-
-
     </script>
     <style>body {
             background: url( 'images/stars.jpg' ) no-repeat center center fixed;
@@ -39,14 +30,6 @@
             background-size: cover;
         }
 
-
-
-
-
-
-
-
-
     </style>
 </head>
 <body>
@@ -55,6 +38,7 @@
         <section><h2>Flows - Kotlin's shot at concurrency</h2></section>
         <section data-background-image="images/mars.png">
             <aside class="notes">
+                I'm gonna tell you the story of Mark, which hopefully is gonna e
                 It’s the year 2047. Mark is the captain of Leto II - the second mission to Mars. The first expedition
                 disappeared mysteriously having launched from Phobos - one of Mars satellites - to land on the Red
                 Planet. Mark has lead his team from the moon with no complications and that’s what worries him most. He
@@ -106,7 +90,7 @@
                     println("Futures started!")
 
                     spaceship.setOff(engineFuture.get())
-                    reportCleaning(cleaningFuture.get())
+                    spaceship.reportCleaning(cleaningFuture.get())
                 }
                 </code>
             </pre>
@@ -126,17 +110,21 @@
                 </aside>
             </section>
             <section>
-                <pre><code class="plaintext" data-trim data-noescape>
+                <pre><code class="plaintext stretch" data-trim data-noescape>
                 Starting engines from Completable Future
                 Futures started!
                 Starting cleaning from Completable Future
                 <p class="fragment fade-in">
                 Spaceship is taking off with speed: 120
+                </p>
+                <p class="fragment fade-in">
                 java.util.concurrent.ExecutionException: java.lang.RuntimeException
                 at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:395)
                 at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1999)
+                </p>
+                <p class="fragment fade-in">
                 //Cleaning system failure sets the engines on fire
-                //when the spaceship has already set off!
+                //but the spaceship sets off regardless!
                 </p>
                 </code></pre>
                 <aside class="notes">
@@ -154,9 +142,8 @@
             <pre>
                 <code class="kotlin" data-trim data-noescape>
                     fun initiateStart() {
-                        reportCleaning(
-                            spaceship
-                                .startEngines()
+                        spaceship.reportCleaning(
+                            spaceship.startEngines()
                                 .thenCombine(spaceship.startAutoCleaning())
                                 { speed, isCleaningOk ->
                                     spaceship.setOff(speed)
@@ -189,9 +176,8 @@
             <pre>
                 <code class="kotlin" data-trim data-noescape>
                     fun initiateStart() {
-                        reportCleaning(
-                            spaceship
-                                .startEngines()
+                        spaceship.reportCleaning(
+                            spaceship.startEngines()
                                 .thenCombine(spaceship.startAutoCleaning())
                                 { speed, isCleaningOk ->
                                     spaceship.setOff(speed)
@@ -205,9 +191,31 @@
                 <aside class="notes">
                     But... there always is a but :) This looks horrible for me. I mean look at this code!
                     Can you read it for the first time and see what it's doing? I don't even though I wrote it!
-                    It's like ''a joke here''
-                    Second of all you really need
-                    to go deep into this combinators business. And I really don't want that. I just wanted
+                    Calling this spaghetti code is like calling the whole where you to pee in a train a toilet.
+                    I know that there are Pendolino trains, but they don't go to Lublin.
+                    Let's try and make it slightly more bearable.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        fun initiateStart() {
+                            val engineAndCleaningFuture = spaceship.startEngines()
+                                .thenCombine(spaceship.startAutoCleaning())
+                                { speed, isCleaningOk ->
+                                    spaceship.setOff(speed)
+                                    isCleaningOk
+                                }
+                            spaceship.reportCleaning(engineAndCleaningFuture.get())
+                        }
+                    </code>
+                </pre>
+                <p class="fragment" data-code-focus="8"/>
+                <p class="fragment" data-code-focus="5"/>
+                <aside class="notes">
+                    Let's try to clean this up a bit...
+                    Second of all you really need to go deep into this combinators business. And I really don't want
+                    that. I just wanted
                     to spin off some async tasks and not mess around with combinators. Now your async code looks
                     very different to your async code, which is not nice at all. You are also lucky if there is a
                     combinator for the problem you are facing and you can find it.
@@ -234,6 +242,7 @@
                             }
                     </code>
                 </pre>
+                <p class="fragment" data-code-focus="1"/>
                 <aside class="notes">
                     We will first modify the the spaceship functions. Instead of using Completable
                     Futures they will be declared as suspending functions and will simply return their values.
@@ -295,7 +304,7 @@
                         println("Coroutines started!")
 
                         spaceship.setOff(engineDeferred.await())
-                        reportCleaning(cleaningDeferred.await())
+                        spaceship.reportCleaning(cleaningDeferred.await())
                     }
                     </code>
                 </pre>
@@ -349,16 +358,55 @@
                 </aside>
             </section>
         </section>
+        <section data-background-image="images/orion.jpg">
+            <aside class="notes">
+                We have helped Mark find the possible cause of Leto's I trouble and fix it. Moreover we gave him
+                a standard, very nice, readable and foolproof solution for parallel decomposition of tasks. He's now
+                safely off from Phobos continuing his mission. Mark is rather cautious after the first expedition
+                disappeared mysteriously and doesn't want to fly straight to Mars. He would like first do a
+                reconnaissance flight and check that everything is fine. He will
+                first circle the Red Planet and collect some data from the spaceship's sensors to double-check that the
+                vehicle has been prepared for the current conditions. If any of the readings is off the charts, then
+                he will cancel the reconnaissance flight and go back to Phobos.
+            </aside>
+        </section>
         <section>
-            <section data-background-image="images/orion.jpg">
+            <section>
+                 <pre>
+                    <code class="kotlin stretch" data-trim data-noescape>
+                    private fun getTempReading(): SensorReading {
+                        Thread.sleep(500) //sensor processing data
+                        return SensorReading("temp", -270.1)
+                    }<p class="fragment" data-code-focus="2"/>
+                    <p class="fragment fade-in">
+                    private fun getSolarReading(): SensorReading {
+                        Thread.sleep(700) //sensor processing data
+                        return SensorReading("sun", 372.0)
+                    }
+                    </p>
+                    <p class="fragment fade-in">
+                    fun getAllReadings(): List&lt;SensorReading&gt; = listOf(
+                        getTempReading(),
+                        getSolarReading()
+                    )
+                    </p>
+                    </code>
+                 </pre>
                 <aside class="notes">
-                    We have helped Mark find the possible cause of Leto's I trouble and fix it. Moreover we gave him
-                    a standard, very nice, readable and foolproof solution for parallel decomposition of tasks. He's now
-                    safely off from Phobos continuing his mission.
+                    There are lots of sensors that will be collecting data. Here is the first
+                    attempt that the engineers have put forward. We have a number of functions that will need to do some
+                    work (this is simulated by the sleep). Then we have the second, similar function returning a
+                    different reading and then finally we will return all these readings in a list.
+                </aside>
+            </section>
+            <section data-background-image="images/rocks.jpg">
+                <aside class="notes">
+                    As the spaceship is flying around the planet we want the autopilot to correct the path to avoid
+                    any obstacles that might be flying in the outer space.
                 </aside>
             </section>
             <section>
-                 <pre>
+                <pre>
                     <code class="kotlin stretch" data-trim data-noescape>
                         fun main() = runBlocking {
                             launch {
@@ -369,35 +417,218 @@
                             }
                             println("Waiting for the coroutine to launch...")
                             delay(500)
-
+                        <p class="fragment" data-code-focus="2"/>
+                        <p class="fragment" data-code-focus="8,9"/>
                         <p class="fragment fade-in">
                             println("Starting blocking measurements...")
                             val readings = SensorController.getAllReadings()
                             println(readings)
-                                        </p>
-                        <p class="fragment fade-in">
-                            println("Starting non-blocking measurements...")
-                            val flow = SensorController.getReadingsInFlow()
-                            flow.collect { println(it) }
-                                        </p>
+                            readings.forEach {
+                                Thread.sleep(1000) //Mark's validation
+                                println(it)
+                            }
                         }
+                        <p class="fragment" data-code-focus="14"/>
+                        <p class="fragment" data-code-focus="17"/>
+                        </p>
                     </code>
                  </pre>
+                <aside class="notes">
+                    We don't want this to be blocked so that we don't fly into NASA's rubbish.
+                    Then we're going to take the measurements and Mark will validate
+                    each of them before accepting it. The problem here is that taking the measurements will block the
+                    main thread and also correcting the path.
+                </aside>
             </section>
             <section>
-                <video src="images/flows.mov" controls></video>
+                <video class="stretch" src="images/blocking.mov" controls></video>
+                <aside class="notes">
+                    So we're not actually doing what we were suggested to do. We want to process the items one by one.
+                    Moreover we need to do it async without blocking the main thread. How can we do it? You've guessed
+                    it: suspending functions.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin stretch" data-trim data-noescape>
+                        private suspend fun getTempReadingSuspending(): SensorReading {
+                            delay(500) //sensor processing data
+                            return SensorReading("temp", -270.1)
+                        }
+                        <p class="fragment fade-in">
+                        private suspend fun getSolarReadingSuspending(): SensorReading {
+                            delay(700) //sensor processing data
+                            return SensorReading("sun", 372.0)
+                        }
+                        </p>
+                        <p class="fragment fade-in">
+                        fun getAllReadingsInFlow(): Flow&lt;SensorReading&gt; = flow {
+                            emit(getTempReadingSuspending())
+                            emit(getSolarReadingSuspending())
+                        }
+                        </p>
+                    </code>
+                 </pre>
+                <p class="fragment" data-code-focus="12"/>
+                <p class="fragment" data-code-focus="13,14"/>
+                <aside class="notes">
+                    We turn the first two functions into suspending functions. And finally what is going to allow us
+                    to process the items async one by one is a cold Flow.
+                    Cold means that no resources are bound upon creation, once the collector finishes, no computation is
+                    running
+                    It only describes the computation, it's not started until a terminal operation is called.
+                    First we create the flow from the suspendable block.
+                    Then we emit items to it. It basically declares these values as being later available to the
+                    collector when the collection eventually happens.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin stretch" data-trim data-noescape>
+                        fun main() = runBlocking {
+                            launch {
+                                repeat (15) {
+                                    println("Actively correcting path...")
+                                    delay(500)
+                                }
+                            }
+                            println("Waiting for the coroutine to launch...")
+                            delay(500)
+                        <p class="fragment fade-in">
+                            println("Starting non-blocking measurements...")
+                            val flow = SensorController.getAllReadingsInFlow()
+                            println(flow)
+                            flow.collect {
+                                delay(1000) //Mark's validation
+                                println(it)
+                            }
+                        }
+                        </p>
+                    </code>
+                 </pre>
+                <p class="fragment" data-code-focus="14"/>
+                <aside class="notes">
+                    So now if we use a flow instead of a list we should be able to keep correcting the path of the
+                    spaceship while taking the measurements and validating them.
+                    This is the terminal action that causes the flow to be evaluated. The block passed to collect {}
+                    describes what should be done with each of the values that has been emitted in the flow.
+                    Let's see how that looks.
+                </aside>
+            </section>
+            <section>
+                <video class="stretch" src="images/flows.mov" controls></video>
+                <aside class="notes">
+                    If you need to return multiple items from a suspending function, then Flow is the collection that you
+                    should be using.
+                </aside>
             </section>
         </section>
-        <!--        <section>-->
-        <!--            <pre>-->
-        <!--                <code class="kotlin" data-trim data-noescape>-->
-        <!--                    -->
-        <!--                </code>-->
-        <!--            </pre>-->
-        <!--        <aside class="notes">-->
+        <section>
+            <section>
+                <h2>RxKotlin?</h2>
+                <aside class="notes">
+                    Ok, nice, so we've basically got another RX implementation of lazy streams in Kotlin. Why should Mark
+                    care? Because it's quite different from how the Rx is implemented.
+                    Because Mark is far in the outer space, far from Houston. It makes a whole world of a difference
+                    if you can improve something in your toolbox yourself, if you can create another tool suitable for a
+                    job and if you can understand what it's actually doing.
+                </aside>
+            </section>
+            <section>
+                <h3>"Be warned that writing (reactive) operators is hard..."</h3>
+                <br>
+                *from the ReactiveX documentation
+                <aside class="notes">
+                    If you've ever tried to write your own
+                    implementation of RX operator, then you would know that it's actually pretty difficult to get
+                    all the corner cases right. Why is it so difficult? Partly because we're trying to get async
+                    backpressure on the JVM - the platform has no support for this. So you get a ton of operators, but
+                    you're pretty much out of luck if none of them really suits you.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        interface Flow&lt;out T&gt; {
+                           suspend fun collect(collector: FlowCollector&lt;T&gt;)
+                        }
+                        <p class="fragment fade-in">
+                        interface FlowCollector&lt;in T&gt; {
+                            suspend fun emit(value: T)
+                        }
+                        </p>
+                    </code>
+                </pre>
+                <aside class="notes">
+                    How is this different with Flows? Well, Flows again fit in nicely into the principles of the Kotlin
+                    language. They are built upon suspending functions. That means that their design is pretty
+                    straightforward and you basically get backpressure for free. It's handled by the suspending
+                    functions.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                    suspend fun &lt;T&gt; Flow&lt;T&gt;.collect(action: suspend (value: T) -> Unit) =
+                            collect(object : FlowCollector&lt;T&gt; {
+                                        override suspend fun emit(value: T) = action(value)
+                                        }
+                                    )
+                    </code>
+                </pre>
+                <aside class="notes">
+                    All the actions that we execute on each of the items of the flows are suspendable. That means
+                    that the entire flow is suspended until we start executing these actions in our terminal operator:
+                    collect(). When these actions are executed though they will too be suspended when they take time
+                    to complete and will only proceed to the next stage when ready.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                    fun Flow&lt;SensorReading&gt;.validateMeasurement(): Flow&lt;SensorReading&gt; =
+                        transform { sensorReading ->
+                            delay(1000) //delay moved from the collector
+                            if (sensorReading.value > 1000) throw IllegalStateException()
+                        }
+                    </code>
+                </pre>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                    flow
+                        .validateMeasurement()
+                        .collect { println(it) }
+                    </code>
+                </pre>
+                <aside class="notes">
 
-        <!--        </aside>-->
-        <!--        </section>-->
+                </aside>
+            </section>
+            <section>
+                You cannot leak a subscription
+            </section>
+            <section>
+                On complete
+            </section>
+            <section>
+                Handling exceptions
+            </section>
+            <section>
+                What we're missing: concurrent flow processing
+            </section>
+        </section>
+        <section>
+            <h2>Extra slides</h2>
+        </section>
+        <section>
+            <section>
+                <h2>Structured concurrency</h2>
+            </section>
+        </section>
     </div>
 </div>
 
@@ -423,16 +654,6 @@
                     }
 				]
 			});
-
-
-
-
-
-
-
-
-
-
 </script>
 </body>
 </html>
