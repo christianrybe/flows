@@ -38,7 +38,8 @@
         <section><h2>Flows - Kotlin's shot at concurrency</h2></section>
         <section data-background-image="images/mars.png">
             <aside class="notes">
-                I'm gonna tell you the story of Mark, which hopefully is gonna e
+                I'm gonna tell you the story of Mark, which hopefully is gonna be less tragic than Tony Stark from
+                the Avengers, I hoped I haven't spoiled if someone hasn't seen it yet.
                 It’s the year 2047. Mark is the captain of Leto II - the second mission to Mars. The first expedition
                 disappeared mysteriously having launched from Phobos - one of Mars satellites - to land on the Red
                 Planet. Mark has lead his team from the moon with no complications and that’s what worries him most. He
@@ -590,10 +591,16 @@
                         transform { sensorReading ->
                             delay(1000) //delay moved from the collector
                             if (sensorReading.value > 1000) throw IllegalStateException()
+                            emit(sensorReading)
                         }
                     </code>
                 </pre>
+                <p class="fragment" data-code-focus="2"/>
                 <aside class="notes">
+                    Applies transform function to each value of the given flow.
+                    The receiver of the transform is FlowCollector and thus transform is a generic function that may
+                    transform emitted element, skip it or emit it multiple times. This operator can be used as a
+                    building block for other operators, for example:
                 </aside>
             </section>
             <section>
@@ -605,29 +612,83 @@
                     </code>
                 </pre>
                 <aside class="notes">
-
+                    You can use your custom operator on the flow that we've had before.
+                    If you look at these flows maybe you notice a detail, which again is pretty important.
+                    There are no subscriptions!
                 </aside>
             </section>
             <section>
-                You cannot leak a subscription
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                val originalFlow: Flow&lt;SensorReading&gt; =
+                        SensorController.getAllReadingsInFlow()
+
+                val validatedFlow: Flow&lt;SensorReading&gt; =
+                        originalFlow.validateMeasurement()
+
+                val unit: Unit =
+                        validatedFlow.collect { println(it) }
+                    </code>
+                </pre>
+                <aside class="notes">
+                    You cannot leak a subscription. There is no such thing. It's super safe just like the coroutines
+                    that help us manage computations with scopes.
+                </aside>
             </section>
             <section>
-                On complete
+                <pre>
+                    <code class="kotlin" data-noescape>dataFlow()
+<p class="fragment fade-in">    .sendMailOnInappropriateException()</p>
+    .failAfterThree()
+    .catch { e -> println("Caught exception $e") }
+    .collect { println(it) }</code>
+                </pre>
+                <aside class="notes">
+                    .catch only catches exception upstream to provide exception transparency: you don't catch the
+                    exceptions of the entire stream.
+                </aside>
             </section>
             <section>
-                Handling exceptions
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        fun &lt;T&gt; Flow&lt;T&gt;.sendMailOnInappropriateException(): Flow&lt;T&gt;> =
+                            catch { e ->
+                                if (e is InappropriateException) println("Sending email...")
+                            }
+                    </code>
+                </pre>
+                <aside class="notes">
+                    You can quite nicely encapsulate your exception handling logic.
+                </aside>
             </section>
             <section>
-                What we're missing: concurrent flow processing
+                <h3>Coming later</h3>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        SensorController.getAllReadingsInFlow().concurrent(4) {
+                            collect { println(it) }
+                        }<p class="fragment fade-in">.collect {}</p>
+                    </code>
+                </pre>
+                <aside class="notes">
+                    It would be nice to have concurrent processing of the flows and it is under way, but it's
+                    actually only being designed.
+                    It's going to collect in 4 coroutines concurrently
+                    I don't like this particular design, because at the end you need to write an empty collect to
+                    activate it all.
+                </aside>
             </section>
         </section>
         <section>
-            <h2>Extra slides</h2>
-        </section>
-        <section>
-            <section>
-                <h2>Structured concurrency</h2>
-            </section>
+            <h3>Thanks for your attention!</h3>
+            <aside class="notes">
+                My name is Krystian Rybarczyk
+                I came here from Lublin and I'm glad I could drive a car and not take a train.
+                I've worked quite a while in the JVM world
+                I work for Codete mostly remotely and I very much enjoy this style of work. And I recently switched to
+                a project where the majority of the codebase is written in Kotlin, so that really sparked my interest
+                in this language.
+            </aside>
         </section>
     </div>
 </div>
