@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>reveal.js</title>
+    <title>Flows - Kotlin's shot at concurrency</title>
 
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/reveal.css">
@@ -21,6 +21,7 @@
 			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
 
+
     </script>
     <style>body {
             background: url( 'images/stars.jpg' ) no-repeat center center fixed;
@@ -30,12 +31,25 @@
             background-size: cover;
         }
 
+
     </style>
 </head>
 <body>
 <div class="reveal">
     <div class="slides">
-        <section><h2>Flows - Kotlin's shot at concurrency</h2></section>
+        <section><h2>Flows - Kotlin's shot at concurrency</h2>
+        <aside class="notes">
+            Thanks for coming guys, I hope that I will get that many ppl at the conference in Kraków and that there will
+            be more ppl than just the camera guy. But anyway it’s very good to
+            see you. I’m glad that you ppl are interested in Flows because it is a pretty cool thing. Even better:
+            it is a cherry on top of a really cool thing, but first I’d like to tell you the story of Mark
+
+            I had this talk at Codete Lublin office last week to practice and 5 ppl came. I asked them if they have
+            any friends in Krakow so that at least as many ppl would come here but look at you. It’s very good to
+            see you. I’m glad that you ppl are interested in Flows because it is a pretty cool thing. Even better:
+            it is a cherry on top of a really cool thing, but first I’d like to tell you the story of Mark
+        </aside>
+        </section>
         <section data-background-image="images/mars.png">
             <aside class="notes">
                 I'm gonna tell you the story of Mark, which hopefully is gonna be less tragic than Tony Stark from
@@ -519,7 +533,8 @@
             <section>
                 <video class="stretch" src="images/flows.mov" controls></video>
                 <aside class="notes">
-                    If you need to return multiple items from a suspending function, then Flow is the collection that you
+                    If you need to return multiple items from a suspending function, then Flow is the collection that
+                    you
                     should be using.
                 </aside>
             </section>
@@ -528,7 +543,8 @@
             <section>
                 <h2>RxKotlin?</h2>
                 <aside class="notes">
-                    Ok, nice, so we've basically got another RX implementation of lazy streams in Kotlin. Why should Mark
+                    Ok, nice, so we've basically got another RX implementation of lazy streams in Kotlin. Why should
+                    Mark
                     care? Because it's quite different from how the Rx is implemented.
                     Because Mark is far in the outer space, far from Houston. It makes a whole world of a difference
                     if you can improve something in your toolbox yourself, if you can create another tool suitable for a
@@ -680,15 +696,26 @@
             </section>
         </section>
         <section>
-            <h3>Thanks for your attention!</h3>
-            <aside class="notes">
-                My name is Krystian Rybarczyk
-                I came here from Lublin and I'm glad I could drive a car and not take a train.
-                I've worked quite a while in the JVM world
-                I work for Codete mostly remotely and I very much enjoy this style of work. And I recently switched to
-                a project where the majority of the codebase is written in Kotlin, so that really sparked my interest
-                in this language.
-            </aside>
+            <section>
+                <h3>Thanks for your attention!</h3>
+                <aside class="notes">
+                    My name is Krystian Rybarczyk
+                    I came here from Lublin and I'm glad I could drive a car and not take a train.
+                    I've worked quite a while in the JVM world
+                    I work for Codete mostly remotely and I very much enjoy this style of work. And I recently switched
+                    to
+                    a project where the majority of the codebase is written in Kotlin, so that really sparked my
+                    interest
+                    in this language.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                <code class="html" data-trim data-noescape="">
+                Code samples: https://github.com/krrybarc/coroutines-and-flows
+                </code>
+                    </pre>
+            </section>
         </section>
     </div>
 </div>
@@ -715,6 +742,7 @@
                     }
 				]
 			});
+
 </script>
 </body>
 </html>

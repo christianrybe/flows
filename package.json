@@ -42,6 +42,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "decktape": "^2.9.3",
     "reveal-code-focus": "^1.1.0"
   }
 }
