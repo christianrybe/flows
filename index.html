@@ -208,27 +208,6 @@
                     Can you read it for the first time and see what it's doing? I don't even though I wrote it!
                     Calling this spaghetti code is like calling the whole where you to pee in a train a toilet.
                     I know that there are Pendolino trains, but they don't go to Lublin.
-                    Let's try and make it slightly more bearable.
-                </aside>
-            </section>
-            <section>
-                <pre>
-                    <code class="kotlin" data-trim data-noescape>
-                        fun initiateStart() {
-                            val engineAndCleaningFuture = spaceship.startEngines()
-                                .thenCombine(spaceship.startAutoCleaning())
-                                { speed, isCleaningOk ->
-                                    spaceship.setOff(speed)
-                                    isCleaningOk
-                                }
-                            spaceship.reportCleaning(engineAndCleaningFuture.get())
-                        }
-                    </code>
-                </pre>
-                <p class="fragment" data-code-focus="8"/>
-                <p class="fragment" data-code-focus="5"/>
-                <aside class="notes">
-                    Let's try to clean this up a bit...
                     Second of all you really need to go deep into this combinators business. And I really don't want
                     that. I just wanted
                     to spin off some async tasks and not mess around with combinators. Now your async code looks
@@ -269,6 +248,9 @@
                 </aside>
             </section>
             <section>
+                <p class="fragment" data-code-focus="1">
+                    <i>callback</i> is used to resume computation
+                </p>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
                         fun startEngines(callback: Continuation&lt;Int&gt;): Int =
@@ -279,9 +261,6 @@
                             }
                     </code>
                 </pre>
-                <p class="fragment" data-code-focus="1">
-                    <i>callback</i> is used to resume computation.
-                </p>
                 <aside class="notes"></aside>
             </section>
             <section>
@@ -358,13 +337,13 @@
                 </aside>
             </section>
             <section>
+                <h4 class="fragment fade-in">They all create their own CoroutineScope</h4>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
                         withContext {}
                         coroutineScope {}
                         async {}
                     </code>
-                    <h3 class="fragment fade-in">They all create their own CoroutineScope</h3>
                 </pre>
                 <aside class="notes">
                     All coroutine builders and scoping functions (these special coroutine functions that we've seen)
@@ -564,6 +543,7 @@
                 </aside>
             </section>
             <section>
+                <h4>Flows under the bonnet</h4>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
                         interface Flow&lt;out T&gt; {
@@ -584,6 +564,7 @@
                 </aside>
             </section>
             <section>
+                <h4>Flows under the bonnet</h4>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
                     suspend fun &lt;T&gt; Flow&lt;T&gt;.collect(action: suspend (value: T) -> Unit) =
@@ -601,6 +582,7 @@
                 </aside>
             </section>
             <section>
+                <h4>Custom operator</h4>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
                     fun Flow&lt;SensorReading&gt;.validateMeasurement(): Flow&lt;SensorReading&gt; =
@@ -620,6 +602,7 @@
                 </aside>
             </section>
             <section>
+                <h4>Resource management</h4>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
                     flow
@@ -634,6 +617,7 @@
                 </aside>
             </section>
             <section>
+                <h4>No subscriptions</h4>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
                 val originalFlow: Flow&lt;SensorReading&gt; =
@@ -652,6 +636,7 @@
                 </aside>
             </section>
             <section>
+                <h4>Error handling</h4>
                 <pre>
                     <code class="kotlin" data-noescape>dataFlow()
 <p class="fragment fade-in">    .sendMailOnInappropriateException()</p>
@@ -665,12 +650,28 @@
                 </aside>
             </section>
             <section>
+                <h4>Custom error handler</h4>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
                         fun &lt;T&gt; Flow&lt;T&gt;.sendMailOnInappropriateException(): Flow&lt;T&gt;> =
                             catch { e ->
                                 if (e is InappropriateException) println("Sending email...")
                             }
+                    </code>
+                </pre>
+                <aside class="notes">
+                    You can quite nicely encapsulate your exception handling logic.
+                </aside>
+            </section>
+            <section>
+                <h4>Changing context</h4>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        SensorController
+                            .getAllReadingsInFlow()
+                            .validateMeasurement()
+                        <p class="fragment fade-in">    .flowOn(Dispatchers.IO)</p>
+                            .collect { println(it) }
                     </code>
                 </pre>
                 <aside class="notes">
