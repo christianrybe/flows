@@ -38,37 +38,34 @@
 <div class="reveal">
     <div class="slides">
         <section><h2>Flows - Kotlin's shot at concurrency</h2>
-        <aside class="notes">
-            Thanks for coming guys, I hope that I will get that many ppl at the conference in Kraków and that there will
-            be more ppl than just the camera guy. But anyway it’s very good to
-            see you. I’m glad that you ppl are interested in Flows because it is a pretty cool thing. Even better:
-            it is a cherry on top of a really cool thing, but first I’d like to tell you the story of Mark
-
-            I had this talk at Codete Lublin office last week to practice and 5 ppl came. I asked them if they have
-            any friends in Krakow so that at least as many ppl would come here but look at you. It’s very good to
+`        <aside class="notes" data-markdown>
+            I had this talk at the Codete office in Lublin last week to practice and 3 of my colleagues came. I asked
+            them if they have
+            any friends in Krakow so that at least as many ppl would come here but look at you. So it's a shock to see
+            so many of you here. It’s very good to
             see you. I’m glad that you ppl are interested in Flows because it is a pretty cool thing. Even better:
             it is a cherry on top of a really cool thing, but first I’d like to tell you the story of Mark
         </aside>
         </section>
         <section data-background-image="images/mars.png">
-            <aside class="notes">
-                I'm gonna tell you the story of Mark, which hopefully is gonna be less tragic than Tony Stark from
-                the Avengers, I hoped I haven't spoiled if someone hasn't seen it yet.
-                It’s the year 2047. Mark is the captain of Leto II - the second mission to Mars. The first expedition
-                disappeared mysteriously having launched from Phobos - one of Mars satellites - to land on the Red
-                Planet. Mark has lead his team from the moon with no complications and that’s what worries him most. He
-                hoped he would encounter some problems that could lead him to what happened to Leto I.
+            <aside class="notes" data-markdown>
+                * I'll tell you the story of Mark, which hopefully is gonna be less tragic than Tony Stark from (no spoiler)
+                * It’s the year 2047.
+                * Mark is the captain of Leto II
+                * first expedition disappeared mysteriously having launched from Phobos to land on Mars.
+                * Mark has lead his team from the moon with no complications and that’s what worries him most.
+                * He hoped he would encounter some problems that could lead him to what happened to Leto I.
             </aside>
         </section>
         <section data-background-image="images/phobos.jpg">
-            <aside class="notes">
-                Now that he has traced their path all the way to Phobos and it’s time to leave the Red Rock he feels
-                really uneasy. He should know what issues Leto I was facing, but he has seen no sign of them so far.
-                He’s now ordering to launch the engines and hopes there won’t be any unforeseen complications… Leto II
-                is travelling aboard a large carrier equipped with large engines. They take quite a while to launch and
-                they also have an autocleaning function that preserves all the elements of the propulsion system. Both
-                starting the engines and doing the auto cleaning takes quite a while and so it’s started asynchronously
-                by the spacecraft driver. This is the same code that Leto I used:
+            <aside class="notes" data-markdown>
+                * Traced Leto I steps Feels uneasy when time to leave Phobos and set off to Mars
+                * He should know what issues they had, but seen nothing
+                * He's ordering to launch the engines and hopes for no unforeseen complications
+                * Leto II is travelling on a large carrier with massive engines that take time to start
+                * Autocleaning system that takes a while
+                * To save time both of the above start async
+                * This is the driver code that does it, same as Leto I:
             </aside>
         </section>
         <section>
@@ -81,8 +78,8 @@
                             120
                         }
                     }</code></pre>
-                <aside class="notes">
-                    We have here two async functions using Completable Future to spin off async tasks.
+                <aside class="notes" data-markdown>
+                    * We have here two async functions using Completable Future to spin off async tasks.
                 </aside>
             </section>
             <section>
@@ -109,19 +106,13 @@
                 }
                 </code>
             </pre>
-                <aside class="notes">
-                    And then we have the driver code that uses them.
-                    This looks more or less fine, right? Cleaning takes a while
-                    so I want to kick it off in another thread and I want to happen while the engines are starting to
-                    save some time. When the engines are on, the we're gonna
-                    set off with the speed reported by the engines.
-                    The problem is that futures are known as hot sources. They are like resources, IO for example - they
-                    need to be closed
-                    whether on completion or when
-                    an error occurs. Here, when these futures are unrelated two bad things may happen.
-                    Firstly: if cleaningFuture fails, then we have lost
-                    reference to engineFuture and it continues to work in the background consuming resources. Second of
-                    all if it so happens that engineFuture also fails, then we cannot handle the failure in any way.
+                <aside class="notes" data-markdown>
+                    * This looks more or less fine, right?
+                    * start async to save some time.
+                    * When the engines are on, the we're gonna set off with the speed reported by the engines.
+                    * The problem is that futures are known as hot sources.
+                    * Here, the futures are unrelated to each other when these futures are unrelated
+                    * two bad things may happen: engines resource leak OR engine failure unsupported
                 </aside>
             </section>
             <section>
@@ -138,15 +129,12 @@
                 at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1999)
                 </p>
                 </code></pre>
-                <aside class="notes">
-                    Let's see what happens when we run this code.
-                    We see that code is indeed executed async, because the logs are not printed sequentially.
-                    And then what happens when the futures are actually executed?
-                    Engines complete successfully, but cleaning fails and this failure is not handled properly.
-                    We see fire in the cleaning system, but can't do anything about it and the spaceship sets of
-                    anyway. It seems that we have solved the mystery of Leto I.
-                    Careless handling of asynchronous tasks led
-                    to a true disaster. Can Mark solve this issue and not get his spaceship blown up?
+                <aside class="notes" data-markdown>
+                    * code is indeed executed async -> logs are not sequential
+                    * Engines complete successfully, but cleaning fails and this failure is not handled properly.
+                    * We see fire in the cleaning system  and the spaceship sets of anyway.
+                    * Maybe we have solved the mystery of Leto I; found a possible cause
+                    * Can Mark solve this issue and not get his spaceship blown up?
                 </aside>
             </section>
             <section>
@@ -165,9 +153,9 @@
                     }
                 </code>
             </pre>
-                <aside class="notes">
-                    One possible solution to this problem is using <b>combinators</b>. They basically allow you to
-                    combine multiple futures and handles failures properly.
+                <aside class="notes" data-markdown>
+                    * One possible solution to this problem is using <b>combinators</b>.
+                    * They basically allow you to combine multiple futures and handles failures properly.
                 </aside>
             </section>
             <section>
@@ -178,9 +166,9 @@
                 at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:395)
                 at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1999)
                 </code></pre>
-                <aside class="notes">
-                    And that is more or less fine actually. When any of the future completes exceptionally then
-                    the entire combinator is cancelled.
+                <aside class="notes" data-markdown>
+                    * more or less fine actually.
+                    * Combinator cancelled when any of the futures completes exceptionally
                 </aside>
             </section>
             <section>
@@ -200,15 +188,11 @@
                 </code>
             </pre>
                 <aside class="notes">
-                    But... there always is a but :) This looks horrible for me. I mean look at this code!
-                    Can you read it for the first time and see what it's doing? I don't even though I wrote it!
-                    Calling this spaghetti code is like calling the whole where you to pee in a train a toilet.
-                    I know that there are Pendolino trains, but they don't go to Lublin.
-                    Second of all you really need to go deep into this combinators business. And I really don't want
-                    that. I just wanted
-                    to spin off some async tasks and not mess around with combinators. Now your async code looks
-                    very different to your async code, which is not nice at all. You are also lucky if there is a
-                    combinator for the problem you are facing and you can find it.
+                    * But, it looks horrible! I mean look at this code!
+                    * Can you read it for the first time and see what it's doing?
+                    * Calling this spaghetti code is like calling the whole where you to pee in a train a toilet.
+                    * I know that there are Pendolino trains, but they don't go to Lublin.
+                    * Let's try and make it slightly more bearable.
                 </aside>
             </section>
         </section>
@@ -216,9 +200,9 @@
             <section>
                 <h3>Kotlin Coroutines</h3>
                 <h3>to the rescue!</h3>
-                <aside class="notes">
-                    How is this going to help Mark not get blown up or how is this going to help you write code
-                    you are familiar with?
+                <aside class="notes" data-markdown>
+                    * How is this going to help Mark not get blown up
+                    * how is this going to help you write async code you are familiar with?
                 </aside>
             </section>
             <section>
@@ -233,14 +217,12 @@
                     </code>
                 </pre>
                 <p class="fragment" data-code-focus="1"/>
-                <aside class="notes">
-                    We will first modify the the spaceship functions. Instead of using Completable
-                    Futures they will be declared as suspending functions and will simply return their values.
-                    However we don't want to only declare them as suspending, but we actually want to make them
-                    suspending. What does that even mean?
-                    A suspending function is simply a function which execution can be paused and resumed later
-                    without blocking the calling thread. How is this done? These suspend functions are compiled
-                    to functions with a callback parameter which is used to resume the execution of the function.
+                <aside class="notes" data-markdown>
+                    * first modify the the spaceship functions
+                    * suspending funcations instead of using Completable Futures and simply return their values.
+                    * we don't only want to declare them as suspending, but we actually want to make them suspending.
+                    * What does suspending even mean?
+                    * its execution can be paused and resumed later without blocking the calling thread
                 </aside>
             </section>
             <section>
@@ -257,7 +239,10 @@
                             }
                     </code>
                 </pre>
-                <aside class="notes"></aside>
+                <aside class="notes" data-markdown>
+                    * How is this done?
+                    * compiled to functions with a callback parameter which is used to resume the execution of the function.
+                </aside>
             </section>
             <section>
                 <pre>
@@ -271,17 +256,14 @@
                     </code>
                 </pre>
                 <p class="fragment" data-code-focus="2"/>
-                <aside class="notes">
-                    We also need to change the second function to a suspending function. But you're probably asking
-                    yourself what is this withContext() function? This is the function that actually does the suspending
-                    magic. It calls the given block, suspends until it completes and returns the result. It also takes
-                    a coroutine context parameter, which here is a Dispatcher. Dispatchers describe how the computation
-                    should be run. Because we know that our function is not CPU intensive and we just want to wait for
-                    it, then we use the IO Dispatcher to offload the task to the shared pool of threads. This is what
-                    we would use IO Dispatcher for, right? We have a blocking task, like reading from a file and
-                    someone just needs to wait for the end. It's not a heavy computation, so we can possibly have many
-                    of these and that's what the IO Dispatcher is. By default it has 64 threads unless you have more
-                    cores than this.
+                <aside class="notes" data-markdown>
+                    * also need to change the second function
+                    * But you're probably asking yourself what is this withContext() function?
+                     * does the suspending magic.
+                    * It calls the given block, suspends until it completes and returns the result.
+                    * It also takes an implicit coroutine context parameter, which here is a Dispatcher.
+                     * Dispatchers describe how the computation should be scheduled.
+                    * function is not CPU intensive and we just want to wait for so use IO
                 </aside>
             </section>
             <section>
@@ -300,7 +282,7 @@
                 </pre>
                 <p class="fragment" data-code-focus="1"/>
                 <p class="fragment" data-code-focus="2,3"/>
-                <aside class="notes">
+                <aside class="notes" data-markdown>
                     With Kotlin coroutines we can write the code like it was ordinary sequential code. We can almost go
                     back to our first attempt and this time it is going to be correct. It's very easy to write and
                     super readable. We keep almost the same logic, but wrap it in a coroutineScope and async modifiers.
@@ -341,7 +323,7 @@
                         async {}
                     </code>
                 </pre>
-                <aside class="notes">
+                <aside class="notes" data-markdown>
                     All coroutine builders and scoping functions (these special coroutine functions that we've seen)
                     create their own CoroutineScope. Let's not go too deep into the rabbit hole, but I hope you get the
                     idea.
@@ -349,15 +331,11 @@
             </section>
         </section>
         <section data-background-image="images/orion.jpg">
-            <aside class="notes">
-                We have helped Mark find the possible cause of Leto's I trouble and fix it. Moreover we gave him
-                a standard, very nice, readable and foolproof solution for parallel decomposition of tasks. He's now
-                safely off from Phobos continuing his mission. Mark is rather cautious after the first expedition
-                disappeared mysteriously and doesn't want to fly straight to Mars. He would like first do a
-                reconnaissance flight and check that everything is fine. He will
-                first circle the Red Planet and collect some data from the spaceship's sensors to double-check that the
-                vehicle has been prepared for the current conditions. If any of the readings is off the charts, then
-                he will cancel the reconnaissance flight and go back to Phobos.
+            <aside class="notes" data-markdown>
+                * Helped Mark find a possible cause of Leto I
+                * Standard nice way to decompose tasks in parallel
+                * He's off from Phobos to attempt landing on Mars
+                * First a reconnaissance flight
             </aside>
         </section>
         <section>
@@ -382,17 +360,14 @@
                     </p>
                     </code>
                  </pre>
-                <aside class="notes">
-                    There are lots of sensors that will be collecting data. Here is the first
-                    attempt that the engineers have put forward. We have a number of functions that will need to do some
-                    work (this is simulated by the sleep). Then we have the second, similar function returning a
-                    different reading and then finally we will return all these readings in a list.
+                <aside class="notes" data-markdown>
+                    * First attempt
+                    * Lots of sensors
                 </aside>
             </section>
             <section data-background-image="images/rocks.jpg">
-                <aside class="notes">
-                    As the spaceship is flying around the planet we want the autopilot to correct the path to avoid
-                    any obstacles that might be flying in the outer space.
+                <aside class="notes" data-markdown>
+                    * Correct the path
                 </aside>
             </section>
             <section>
@@ -423,19 +398,19 @@
                         </p>
                     </code>
                  </pre>
-                <aside class="notes">
-                    We don't want this to be blocked so that we don't fly into NASA's rubbish.
-                    Then we're going to take the measurements and Mark will validate
-                    each of them before accepting it. The problem here is that taking the measurements will block the
-                    main thread and also correcting the path.
+                <aside class="notes" data-markdown>
+                    * We don't want to be blocked so that we don't fly into NASA's rubbish.
+                    * Mark will validate each of them before accepting it.
+                    * taking the measurements will block the main thread
                 </aside>
             </section>
             <section>
-                <video class="stretch" src="images/blocking.mov" data-autoplay data-background-video-loop="loop"></video>
-                <aside class="notes">
-                    So we're not actually doing what we were suggested to do. We want to process the items one by one.
-                    Moreover we need to do it async without blocking the main thread. How can we do it? You've guessed
-                    it: suspending functions.
+                <video class="stretch" src="images/blocking.mov" data-autoplay></video>
+                <aside class="notes" data-markdown>
+                    * So we're not actually doing what we were suggested to do
+                     * async without blocking the main thread.
+                     * Process one by one
+                    * How? Suspending functions!
                 </aside>
             </section>
             <section>
@@ -461,15 +436,11 @@
                  </pre>
                 <p class="fragment" data-code-focus="12"/>
                 <p class="fragment" data-code-focus="13,14"/>
-                <aside class="notes">
-                    We turn the first two functions into suspending functions. And finally what is going to allow us
-                    to process the items async one by one is a cold Flow.
-                    Cold means that no resources are bound upon creation, once the collector finishes, no computation is
-                    running
-                    It only describes the computation, it's not started until a terminal operation is called.
-                    First we create the flow from the suspendable block.
-                    Then we emit items to it. It basically declares these values as being later available to the
-                    collector when the collection eventually happens.
+                <aside class="notes" data-markdown>
+                    * Suspending functions
+                    * Cold Flow - no resources are bound
+                    * Create the flow from the suspendable block
+                    * Emit items - declares values as being later available
                 </aside>
             </section>
             <section>
@@ -497,45 +468,36 @@
                     </code>
                  </pre>
                 <p class="fragment" data-code-focus="14"/>
-                <aside class="notes">
-                    So now if we use a flow instead of a list we should be able to keep correcting the path of the
-                    spaceship while taking the measurements and validating them.
-                    This is the terminal action that causes the flow to be evaluated. The block passed to collect {}
-                    describes what should be done with each of the values that has been emitted in the flow.
-                    Let's see how that looks.
+                <aside class="notes" data-markdown>
+                    * Should be async
+                    * Terminal action - triggers the flow
                 </aside>
             </section>
             <section>
                 <video class="stretch" src="images/flows.mov" data-autoplay></video>
-                <aside class="notes">
-                    If you need to return multiple items from a suspending function, then Flow is the collection that
-                    you
-                    should be using.
+                <aside class="notes" data-markdown>
+                    * Flow for returning multilpe items
                 </aside>
             </section>
         </section>
         <section>
             <section>
                 <h2>RxKotlin?</h2>
-                <aside class="notes">
-                    Ok, nice, so we've basically got another RX implementation of lazy streams in Kotlin. Why should
-                    Mark
-                    care? Because it's quite different from how the Rx is implemented.
-                    Because Mark is far in the outer space, far from Houston. It makes a whole world of a difference
-                    if you can improve something in your toolbox yourself, if you can create another tool suitable for a
-                    job and if you can understand what it's actually doing.
+                <aside class="notes" data-markdown>
+                    *Why should Mark care?
+                     * different from Rx  implementation.
+                    * Mark is far in the outer space, far from Houston.
+                     * you can improve something in your toolbox
                 </aside>
             </section>
             <section>
                 <h3>"Be warned that writing (reactive) operators is hard..."</h3>
                 <br>
                 *from the ReactiveX documentation
-                <aside class="notes">
-                    If you've ever tried to write your own
-                    implementation of RX operator, then you would know that it's actually pretty difficult to get
-                    all the corner cases right. Why is it so difficult? Partly because we're trying to get async
-                    backpressure on the JVM - the platform has no support for this. So you get a ton of operators, but
-                    you're pretty much out of luck if none of them really suits you.
+                <aside class="notes" data-markdown>
+                    * difficult
+                     * backpressure
+                    * you get a ton of operators, but otherwise - tough luck
                 </aside>
             </section>
             <section>
@@ -552,11 +514,10 @@
                         </p>
                     </code>
                 </pre>
-                <aside class="notes">
-                    How is this different with Flows? Well, Flows again fit in nicely into the principles of the Kotlin
-                    language. They are built upon suspending functions. That means that their design is pretty
-                    straightforward and you basically get backpressure for free. It's handled by the suspending
-                    functions.
+                <aside class="notes" data-markdown>
+                    * Flows follow extension-oriented design
+                    * built upon suspending functions.
+                     * backpressure for free
                 </aside>
             </section>
             <section>
@@ -570,11 +531,10 @@
                                     )
                     </code>
                 </pre>
-                <aside class="notes">
-                    All the actions that we execute on each of the items of the flows are suspendable. That means
-                    that the entire flow is suspended until we start executing these actions in our terminal operator:
-                    collect(). When these actions are executed though they will too be suspended when they take time
-                    to complete and will only proceed to the next stage when ready.
+                <aside class="notes" data-markdown>
+                    * all actions are suspendable
+                     * the entire flow is suspended until the terminal operator
+                    * actions will too be suspended when they take time
                 </aside>
             </section>
             <section>
@@ -590,11 +550,10 @@
                     </code>
                 </pre>
                 <p class="fragment" data-code-focus="2"/>
-                <aside class="notes">
-                    Applies transform function to each value of the given flow.
-                    The receiver of the transform is FlowCollector and thus transform is a generic function that may
-                    transform emitted element, skip it or emit it multiple times. This operator can be used as a
-                    building block for other operators, for example:
+                <aside class="notes" data-markdown>
+                    * transform each value
+                    * transform {}  can be used as a building block for other operators
+                     * receiver of the block is FlowCollector, so we operate in its context
                 </aside>
             </section>
             <section>
@@ -606,10 +565,9 @@
                         .collect { println(it) }
                     </code>
                 </pre>
-                <aside class="notes">
-                    You can use your custom operator on the flow that we've had before.
-                    If you look at these flows maybe you notice a detail, which again is pretty important.
-                    There are no subscriptions!
+                <aside class="notes" data-markdown>
+                    * can use your operator just like its built in
+                    * detail: no subscriptions
                 </aside>
             </section>
             <section>
@@ -626,9 +584,9 @@
                         validatedFlow.collect { println(it) }
                     </code>
                 </pre>
-                <aside class="notes">
-                    You cannot leak a subscription. There is no such thing. It's super safe just like the coroutines
-                    that help us manage computations with scopes.
+                <aside class="notes" data-markdown>
+                    * You cannot leak a subscription
+                    * It's super safe just like the coroutines
                 </aside>
             </section>
             <section>
@@ -640,9 +598,9 @@
     .catch { e -> println("Caught exception $e") }
     .collect { println(it) }</code>
                 </pre>
-                <aside class="notes">
-                    .catch only catches exception upstream to provide exception transparency: you don't catch the
-                    exceptions of the entire stream.
+                <aside class="notes" data-markdown>
+                    * .catch only catches upstream to provide
+                    * exception transparency: you don't catch the exceptions of the entire stream.
                 </aside>
             </section>
             <section>
@@ -655,7 +613,7 @@
                             }
                     </code>
                 </pre>
-                <aside class="notes">
+                <aside class="notes" data-markdown>
                     You can quite nicely encapsulate your exception handling logic.
                 </aside>
             </section>
@@ -670,8 +628,9 @@
                             .collect { println(it) }
                     </code>
                 </pre>
-                <aside class="notes">
-                    You can quite nicely encapsulate your exception handling logic.
+                <aside class="notes" data-markdown>
+                    * important for Android developers
+                    * only changes upstream and then goes back to previous
                 </aside>
             </section>
             <section>
@@ -683,32 +642,25 @@
                         }<p class="fragment fade-in">.collect {}</p>
                     </code>
                 </pre>
-                <aside class="notes">
-                    It would be nice to have concurrent processing of the flows and it is under way, but it's
-                    actually only being designed.
-                    It's going to collect in 4 coroutines concurrently
-                    I don't like this particular design, because at the end you need to write an empty collect to
-                    activate it all.
+                <aside class="notes" data-markdown>
+                    * nice to have concurrent processing of flows
+                    * this particular design is not great: redundant collect
                 </aside>
             </section>
         </section>
         <section>
             <section>
                 <h3>Thanks for your attention!</h3>
-                <aside class="notes">
-                    My name is Krystian Rybarczyk
-                    I came here from Lublin and I'm glad I could drive a car and not take a train.
-                    I've worked quite a while in the JVM world
-                    I work for Codete mostly remotely and I very much enjoy this style of work. And I recently switched
-                    to
-                    a project where the majority of the codebase is written in Kotlin, so that really sparked my
-                    interest
-                    in this language.
+                <aside class="notes" data-markdown>
+                    * My name is Krystian Rybarczyk
                 </aside>
             </section>
             <section>
                 <h3>We are hiring!</h3>
                 <img src="images/codete-white.png"/>
+                <aside class="ntoes">
+                    * Google us for interesting projects
+                </aside>
             </section>
             <section>
                 <pre>
