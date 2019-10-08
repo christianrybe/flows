@@ -29,9 +29,10 @@ body {
   text-shadow: none; }
 
 .footer {
-  position: absolute;
-  left: 35%;
-  bottom: 1em;
+	position: absolute;
+	left: 4%;
+	bottom: 0;
+	width: 20%;
 }
 
 .reveal .slides section,
