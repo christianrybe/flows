@@ -30,9 +30,12 @@ body {
 
 .footer {
 	position: absolute;
-	left: 4%;
+	left: 0;
 	bottom: 0;
-	width: 20%;
+}
+
+.footer img {
+    height: 50px;
 }
 
 .reveal .slides section,
