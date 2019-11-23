@@ -41,20 +41,17 @@
             <h2>Flows - Kotlin's shot at concurrency</h2>
             <h4>Krystian Rybarczyk</h4>
             <aside class="notes" data-markdown>
-                I had this talk at the Codete office in Lublin last week to practice and 3 of my colleagues came. I
-                asked
-                them if they have
-                any friends in Krakow so that at least as many ppl would come here but look at you. So it's a shock to
-                see
-                so many of you here. It’s very good to
-                see you. I’m glad that you ppl are interested in Flows because it is a pretty cool thing. Even better:
-                it is a cherry on top of a really cool thing, but first I’d like to tell you the story of Mark
+                * I had this talk in October in Cracow - Kotlin microsphere at 9pm.
+                * 15 ppl, half asleep
+                * shock to see so many, being awake, at least for now
+                * I trust it will stay this way, because Flows are cool
+                * Even better: cherry on top
+                * but first: the story of Mark
             </aside>
         </section>
         <section data-background-image="images/mars.png">
             <aside class="notes" data-markdown>
-                * I'll tell you the story of Mark, which hopefully is gonna be less tragic than Tony Stark from (no
-                spoiler)
+                * which hopefully is gonna be less tragic than Tony Stark from (no spoiler)
                 * It’s the year 2047.
                 * Mark is the captain of Leto II
                 * first expedition disappeared mysteriously having launched from Phobos to land on Mars.
@@ -192,7 +189,7 @@
                     }
                 </code>
             </pre>
-                <aside class="notes">
+                <aside class="notes" data-markdown>
                     * But, it looks horrible! I mean look at this code!
                     * Can you read it for the first time and see what it's doing?
                     * Calling this spaghetti code is like calling the whole where you to pee in a train a toilet.
@@ -224,7 +221,7 @@
                 <p class="fragment" data-code-focus="1"/>
                 <aside class="notes" data-markdown>
                     * first modify the the spaceship functions
-                    * suspending funcations instead of using Completable Futures and simply return their values.
+                    * suspending functions instead of using Completable Futures and simply return their values.
                     * we don't only want to declare them as suspending, but we actually want to make them suspending.
                     * What does suspending even mean?
                     * its execution can be paused and resumed later without blocking the calling thread
@@ -287,37 +284,39 @@
                     </code>
                 </pre>
                 <p class="fragment" data-code-focus="1"/>
+                <aside class="notes" data-markdown>
+                    * With coroutines we can write it was sequential; can almost go back to beginning and it will be correct.
+                    * easy to write and readable: almost the same structure, but wrap in coroutineScope and async
+                    * Concurrency -like the language is explicit: create a CoroutineScope at top, which wraps all the computation
+                    * simplifying: 2 properties: each scope waits for its children to finish (reason sequentially), second: propagate cancellation
+                    * can only launch coroutines in a Coroutine Scope, beceause computation should be in a context.
+                    * spin off concur. computation for some time and clean up
+                    * entity with a well-defined lifecycle, responsible for launching and cancelling children coroutines.
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                    suspend fun initiateStart() = coroutineScope {
+                        val engineDeferred = async { suspendingShip.startEngines() }
+                        val cleaningDeferred = async { suspendingShip.autoClean() }
+
+                        println("Coroutines started!")
+
+                        spaceship.setOff(engineDeferred.await())
+                        spaceship.reportCleaning(cleaningDeferred.await())
+                    }
+                    </code>
+                </pre>
                 <p class="fragment" data-code-focus="2,3"/>
                 <aside class="notes" data-markdown>
-                    With Kotlin coroutines we can write the code like it was ordinary sequential code. We can almost go
-                    back to our first attempt and this time it is going to be correct. It's very easy to write and
-                    super readable. We keep almost the same logic, but wrap it in a coroutineScope and async modifiers.
-
-                    Concurrency in Kotlin just like the entire language is very explicit. The way it works here is that
-                    we create a CoroutineScope at the very top, which wraps all the computation that we want to
-                    decompose in parallel.
-                    I don't want to go super deep in here, but slightly simplifying:
-                    This guy has two important properties: first of all by convention each scope waits for all its
-                    children to finish, so that we can reason about it in a sequential manner. And second of all scopes
-                    are used to propagate cancellation to its children not to leave any hanging computation.
-                    We are allowed to launch coroutines only in a Coroutine Scope. Why? Because Kotlin wants us to run
-                    the concurrent computation in a well-defined context. You often want to spin off some concurrent
-                    computation only in a limited time frame and then clean up. This is what Coroutine Scope is
-                    essentially for.
-                    It is an entity with a well-defined lifecycle which is responsible for launching and cancelling
-                    children coroutines.
-
-                    Now: what are these coroutines and where are they? Well, they're right here! You can think of
-                    coroutines as lightweight threads. So lightweight in fact that you should not be afraid creating
-                    them, but you're actually encouraged to create many of them to structure your concurrent logic.
-                    Which I guess is kind of exemplified by how easy it is to create and use them.
-
-                    Async is an extension method on CoroutineScope. Don't worry if you don't know what that is. It
-                    basically operates on the coroutine scope we created here. async{} creates a new coroutine and
-                    it returns its future result as an implementation of Deferred, which is kind of Kotlin equivalent of
-                    Java Future, but better. It's scoped like we can see here and CoroutineScope handles cancellation,
-                    so Deferred is fail-safe. This is one of Kotlin coroutine builders and what they also do is they
-                    create their own CoroutineScope, which allows them to launch their children computation.
+                    * Now: where are these coroutines and what are they? Well, they're right here!
+                    * lightweight threads, you should not be afraid creating them, you're encouraged to create many
+                    * Which I guess is kind of exemplified by how easy it is to create and use them.
+                    * Async is an extension method on CoroutineScope (don't worry) it operates on the coroutine scope we created
+                    * async{} creates a new coroutine and it returns its future result as Deferred (Kotlin's Future)
+                    * It's scoped and CoroutineScope handles cancellation, so Deferred is fail-safe.
+                    * one of Kotlin coroutine builders and they all create their own CoroutineScope, to launch their children computation.
                 </aside>
             </section>
             <section>
@@ -330,7 +329,7 @@
                     </code>
                 </pre>
                 <aside class="notes" data-markdown>
-                    All coroutine builders and scoping functions (these special coroutine functions that we've seen)
+                    * All coroutine builders and scoping functions (these special coroutine functions that we've seen)
                     create their own CoroutineScope. Let's not go too deep into the rabbit hole, but I hope you get the
                     idea.
                 </aside>
