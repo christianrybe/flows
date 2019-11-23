@@ -15,21 +15,21 @@
 
     <!-- Printing and PDF exports -->
     <script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
 
 
     </script>
     <style>body {
-            background: url( 'images/stars.jpg' ) no-repeat center center fixed;
-            -webkit-background-size: cover;
-            -moz-background-size: cover;
-            -o-background-size: cover;
-            background-size: cover;
-        }
+        background: url('images/stars.jpg') no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
 
 
     </style>
@@ -40,18 +40,21 @@
         <section>
             <h2>Flows - Kotlin's shot at concurrency</h2>
             <h4>Krystian Rybarczyk</h4>
-`        <aside class="notes" data-markdown>
-            I had this talk at the Codete office in Lublin last week to practice and 3 of my colleagues came. I asked
-            them if they have
-            any friends in Krakow so that at least as many ppl would come here but look at you. So it's a shock to see
-            so many of you here. It’s very good to
-            see you. I’m glad that you ppl are interested in Flows because it is a pretty cool thing. Even better:
-            it is a cherry on top of a really cool thing, but first I’d like to tell you the story of Mark
-        </aside>
+            <aside class="notes" data-markdown>
+                I had this talk at the Codete office in Lublin last week to practice and 3 of my colleagues came. I
+                asked
+                them if they have
+                any friends in Krakow so that at least as many ppl would come here but look at you. So it's a shock to
+                see
+                so many of you here. It’s very good to
+                see you. I’m glad that you ppl are interested in Flows because it is a pretty cool thing. Even better:
+                it is a cherry on top of a really cool thing, but first I’d like to tell you the story of Mark
+            </aside>
         </section>
         <section data-background-image="images/mars.png">
             <aside class="notes" data-markdown>
-                * I'll tell you the story of Mark, which hopefully is gonna be less tragic than Tony Stark from (no spoiler)
+                * I'll tell you the story of Mark, which hopefully is gonna be less tragic than Tony Stark from (no
+                spoiler)
                 * It’s the year 2047.
                 * Mark is the captain of Leto II
                 * first expedition disappeared mysteriously having launched from Phobos to land on Mars.
@@ -134,7 +137,7 @@
                 <aside class="notes" data-markdown>
                     * code is indeed executed async -> logs are not sequential
                     * Engines complete successfully, but cleaning fails and this failure is not handled properly.
-                    * We see fire in the cleaning system  and the spaceship sets of anyway.
+                    * We see fire in the cleaning system and the spaceship sets of anyway.
                     * Maybe we have solved the mystery of Leto I; found a possible cause
                     * Can Mark solve this issue and not get his spaceship blown up?
                 </aside>
@@ -243,7 +246,8 @@
                 </pre>
                 <aside class="notes" data-markdown>
                     * How is this done?
-                    * compiled to functions with a callback parameter which is used to resume the execution of the function.
+                    * compiled to functions with a callback parameter which is used to resume the execution of the
+                    function.
                 </aside>
             </section>
             <section>
@@ -261,10 +265,10 @@
                 <aside class="notes" data-markdown>
                     * also need to change the second function
                     * But you're probably asking yourself what is this withContext() function?
-                     * does the suspending magic.
+                    * does the suspending magic.
                     * It calls the given block, suspends until it completes and returns the result.
                     * It also takes an implicit coroutine context parameter, which here is a Dispatcher.
-                     * Dispatchers describe how the computation should be scheduled.
+                    * Dispatchers describe how the computation should be scheduled.
                     * function is not CPU intensive and we just want to wait for so use IO
                 </aside>
             </section>
@@ -410,8 +414,8 @@
                 <video class="stretch" src="images/blocking.mov" data-autoplay></video>
                 <aside class="notes" data-markdown>
                     * So we're not actually doing what we were suggested to do
-                     * async without blocking the main thread.
-                     * Process one by one
+                    * async without blocking the main thread.
+                    * Process one by one
                     * How? Suspending functions!
                 </aside>
             </section>
@@ -487,9 +491,9 @@
                 <h2>RxKotlin?</h2>
                 <aside class="notes" data-markdown>
                     * Why should Mark care?
-                     * different from Rx  implementation.
+                    * different from Rx implementation.
                     * Mark is far in the outer space, far from Houston.
-                     * you can improve something in your toolbox
+                    * you can improve something in your toolbox
                 </aside>
             </section>
             <section>
@@ -498,7 +502,7 @@
                 *from the ReactiveX documentation
                 <aside class="notes" data-markdown>
                     * difficult
-                     * backpressure
+                    * backpressure
                     * you get a ton of operators, but otherwise - tough luck
                 </aside>
             </section>
@@ -519,7 +523,7 @@
                 <aside class="notes" data-markdown>
                     * Flows follow extension-oriented design
                     * built upon suspending functions.
-                     * backpressure for free
+                    * backpressure for free
                 </aside>
             </section>
             <section>
@@ -535,7 +539,7 @@
                 </pre>
                 <aside class="notes" data-markdown>
                     * all actions are suspendable
-                     * the entire flow is suspended until the terminal operator
+                    * the entire flow is suspended until the terminal operator
                     * actions will too be suspended when they take time
                 </aside>
             </section>
@@ -554,8 +558,8 @@
                 <p class="fragment" data-code-focus="2"/>
                 <aside class="notes" data-markdown>
                     * transform each value
-                    * transform {}  can be used as a building block for other operators
-                     * receiver of the block is FlowCollector, so we operate in its context
+                    * transform {} can be used as a building block for other operators
+                    * receiver of the block is FlowCollector, so we operate in its context
                 </aside>
             </section>
             <section>
@@ -670,30 +674,31 @@
         </section>
     </div>
 </div>
-<div class="footer  ">                <img src="images/codete-white.png"/></div>
+<div class="footer  "><img src="images/codete-white.png"/></div>
 
 <script src="js/reveal.js"></script>
 
 <script>
-			// More info about config & dependencies:
-			// - https://github.com/hakimel/reveal.js#configuration
-			// - https://github.com/hakimel/reveal.js#dependencies
-			Reveal.initialize({
-			    progress: false,
-			    history: true,
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true },
-					{ src: 'node_modules/reveal-code-focus/reveal-code-focus.js',
-                      async: true,
-                      callback: function() {
-                        RevealCodeFocus();
-                      }
-                    }
-				]
-			});
+    // More info about config & dependencies:
+    // - https://github.com/hakimel/reveal.js#configuration
+    // - https://github.com/hakimel/reveal.js#dependencies
+    Reveal.initialize({
+        progress: false,
+        history: true,
+        dependencies: [
+            {src: 'plugin/markdown/marked.js'},
+            {src: 'plugin/markdown/markdown.js'},
+            {src: 'plugin/notes/notes.js', async: true},
+            {src: 'plugin/highlight/highlight.js', async: true},
+            {
+                src: 'node_modules/reveal-code-focus/reveal-code-focus.js',
+                async: true,
+                callback: function () {
+                    RevealCodeFocus();
+                }
+            }
+        ]
+    });
 
 </script>
 </body>
