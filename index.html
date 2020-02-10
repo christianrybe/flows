@@ -250,6 +250,20 @@
             <section>
                 <pre>
                     <code class="kotlin" data-trim data-noescape>
+                        public interface Continuation<in T> {
+                           public val context: CoroutineContext
+                        
+                           public fun resumeWith(result: Result<T>)
+                        }
+                    </code>
+                </pre>
+                <aside class="notes" data-markdown>
+                    * Continuation is pretty simple, only one function
+                </aside>
+            </section>
+            <section>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
                         suspend fun autoClean(): Boolean =
                            withContext(Dispatchers.IO) {
                                println("Starting cleaning")
@@ -637,6 +651,21 @@
                 <aside class="notes" data-markdown>
                     * important for Android developers
                     * only changes upstream and then goes back to previous
+                </aside>
+            </section>
+            <section>
+                <h3>Latest addition</h3>
+                <pre>
+                    <code class="kotlin" data-trim data-noescape>
+                        val positiveNums = flowOf(1, 2, 3)
+                        val negativeNums = flowOf(-1, -2, -3)
+                        
+                        <b>merge(positiveNums, negativeNums)</b>
+                            .collect { println(it) }
+                    </code>
+                </pre>
+                <aside class="notes" data-markdown>
+                    * operator to merge flows without preserving ordering
                 </aside>
             </section>
             <section>
